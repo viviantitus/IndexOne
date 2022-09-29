@@ -1,5 +1,12 @@
 import torch
-from profiler import profile_with_args
+from profiler import profileit
+import argparse
+
+parser = argparse.ArgumentParser(description='Vector DB')
+parser.add_argument('-p', '--profile', dest='profile', action='store_true',
+                    default=False,
+                    help='to profile functions in the app')
+args = parser.parse_args()
 
 
 def get_rand_query(dimension: int = 512):
@@ -15,7 +22,7 @@ def dataset_generator(dataset_size, dimension: int = 512):
     for slice_size in slice_func(dataset_size, 1000000):
         yield torch.rand(size=(dimension, slice_size))
 
-@profile_with_args(enabled=False)
+@profileit(enabled=args.profile)
 def similiarity(q, dataset):
     num = torch.mm(q, dataset)
     den = torch.norm(q) * torch.norm(dataset, dim=0)

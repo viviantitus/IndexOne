@@ -1,8 +1,8 @@
 import cProfile
 
-def profile_with_args(enabled):
+def profileit(enabled):
 
-    def profileit(func):
+    def profile_with_args(func):
         """
         Decorator (function wrapper) that profiles a single function
         @profileit()
@@ -20,4 +20,4 @@ def profile_with_args(enabled):
                 return func(*args, **kwargs)
 
         return wrapper
-    return profileit
+    return profile_with_args
