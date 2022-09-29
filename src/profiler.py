@@ -9,10 +9,9 @@ def profileit(func):
 	    pass
     """
     def wrapper(*args, **kwargs):
-        func_name = func.__name__ + ".pfl"
         prof = cProfile.Profile()
         retval = prof.runcall(func, *args, **kwargs)
-        prof.dump_stats('../profiler_stats/' + func_name)
+        prof.print_stats()
         return retval
 
     return wrapper

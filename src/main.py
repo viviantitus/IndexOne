@@ -1,22 +1,26 @@
 import torch
 from profiler import profileit
 
+
 def get_rand_query(dimension: int = 512):
-    return torch.rand(size=(dimension,))
+    return torch.rand(size=(1, dimension))
 
 def dataset_generator(dataset_size, dimension: int = 512):
-    for i in range(dataset_size):
-        yield torch.rand(size=(dimension,))
+    default_size = 1000000
+    for i in range(int(dataset_size/default_size)):
+        yield torch.rand(size=(dimension, default_size))
 
-def cosine_similarity(x, y):
-    dot_product = torch.dot(x, y)
-    norms = torch.norm(x) * torch.norm(y)
-    return dot_product/ (norms + 1e-6)
+def similiarity(q, dataset):
+    num = torch.mm(q, dataset)
+    den = torch.norm(q) * torch.norm(dataset, dim=0)
+    return torch.flatten(num)/den
 
 @profileit
-def main():
-    query = get_rand_query()
-    for sample in dataset_generator(1000):
-        print(cosine_similarity(query, sample))
+def main(dataset_size):
+    q = get_rand_query()
+    for dataset in dataset_generator(dataset_size):
+        similiarity(q, dataset)
 
-main()
+
+     
+main(dataset_size = 10000000)
