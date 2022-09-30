@@ -22,12 +22,12 @@ def dataset_generator(dataset_size, dimension: int = 512):
     for slice_size in slice_func(dataset_size, 1000000):
         yield torch.rand(size=(dimension, slice_size))
 
-@profileit(enabled=args.profile)
 def similiarity(q, dataset):
     num = torch.mm(q, dataset)
     den = torch.norm(q) * torch.norm(dataset, dim=0)
     return torch.flatten(num)/den
 
+@profileit(enabled=args.profile)
 def main(dataset_size):
     q = get_rand_query()
     for dataset in dataset_generator(dataset_size):
