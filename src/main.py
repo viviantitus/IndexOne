@@ -29,9 +29,10 @@ def similiarity(q, dataset):
 
 @profileit(enabled=args.profile)
 def main(dataset_size):
-    q = get_rand_query()
-    for dataset in dataset_generator(dataset_size):
-        similiarity(q, dataset)
-
+    q = get_rand_query(128)
+    for dataset in dataset_generator(dataset_size, 128):
+        for i in range(1000):
+            similiarity(q, dataset)
+        break
 
 main(dataset_size = 1000000)
