@@ -34,7 +34,7 @@ def calculate_variance(dataset: torch.Tensor, assignments: torch.Tensor, centroi
     return variance
 
 
-def compute_kmeans(dataset: torch.Tensor, num_centroids=5, num_iterations = 30):    
+def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations):    
     ret_centroids = None
     ret_assignments = None
     min_variance = float('inf')
@@ -43,18 +43,19 @@ def compute_kmeans(dataset: torch.Tensor, num_centroids=5, num_iterations = 30):
         variance = min_variance
         while True:
             distances = compute_distance(centroids, dataset)
-            assignments = torch.argmax(distances, dim=0)
+            assignments = torch.argmin(distances, dim=0)
             curr_variance = calculate_variance(dataset, assignments, centroids)
             if variance - curr_variance < 0.001:
                 if min_variance > variance:
                     ret_centroids = centroids
                     min_variance = curr_variance
                     ret_assignments = assignments
+                    print(variance)
                 break
             variance = curr_variance
             centroids = reassign_centroids(dataset, assignments, centroids)
     return (ret_centroids, ret_assignments)
 
-# dataset = get_dataset(10)
-# centroids, assignments = compute_kmeans(dataset, 2, 1000)
-# print(assignments)
+dataset = get_dataset(1000)
+centroids, assignments = compute_kmeans(dataset, 4, 1000)
+print(assignments)
