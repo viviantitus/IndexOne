@@ -1,3 +1,4 @@
+import torch
 from profiler import profileit
 import argparse
 import kmeans
@@ -11,8 +12,9 @@ args = parser.parse_args()
 
 @profileit(enabled=args.profile)
 def main():
-    dataset = kmeans.get_dataset(10000)
-    centroids, assignments = kmeans.compute_kmeans(dataset, 4, 1000)
-    print(assignments)
+    dataset = torch.cat([kmeans.get_dataset(100) * 2, kmeans.get_dataset(100)])
+    variance, centroids, assignments = kmeans.compute_kmeans(dataset, num_centroids=2, num_iterations=1000)
+    print(assignments.unique(return_counts=True))
+    print(variance)
 
 main()

@@ -4,8 +4,8 @@ from distance import compute_distance
 from data_gen import dataset_generator
 
 
-def get_dataset(size: int):
-    for dataset in dataset_generator(size):
+def get_dataset(size: int, dim: int):
+    for dataset in dataset_generator(size, dim):
         return dataset
 
 
@@ -37,20 +37,20 @@ def calculate_variance(dataset: torch.Tensor, assignments: torch.Tensor, centroi
 def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations):    
     ret_centroids = None
     ret_assignments = None
-    min_variance = float('inf')
+    ret_variance = float('inf')
     for _ in range(num_iterations):
         centroids = get_random_samples_from_dataset(dataset, num_centroids)
-        variance = min_variance
+        variance = float('inf')
         while True:
             distances = compute_distance(centroids, dataset)
             assignments = torch.argmin(distances, dim=0)
             curr_variance = calculate_variance(dataset, assignments, centroids)
             if variance - curr_variance < 0.001:
-                if min_variance > variance:
+                if ret_variance > variance:
                     ret_centroids = centroids
-                    min_variance = curr_variance
+                    ret_variance = curr_variance
                     ret_assignments = assignments
                 break
             variance = curr_variance
             centroids = reassign_centroids(dataset, assignments, centroids)
-    return (ret_centroids, ret_assignments)
+    return (ret_variance, ret_centroids, ret_assignments)
