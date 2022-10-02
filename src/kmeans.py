@@ -50,12 +50,7 @@ def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations):
                     ret_centroids = centroids
                     min_variance = curr_variance
                     ret_assignments = assignments
-                    print(variance)
                 break
             variance = curr_variance
             centroids = reassign_centroids(dataset, assignments, centroids)
     return (ret_centroids, ret_assignments)
-
-dataset = get_dataset(1000)
-centroids, assignments = compute_kmeans(dataset, 4, 1000)
-print(assignments)

@@ -1,6 +1,6 @@
-import torch
 from profiler import profileit
 import argparse
+import kmeans
 
 parser = argparse.ArgumentParser(description='Vector DB')
 parser.add_argument('-p', '--profile', dest='profile', action='store_true',
@@ -11,6 +11,8 @@ args = parser.parse_args()
 
 @profileit(enabled=args.profile)
 def main():
-    return "not sure what to implement!"
+    dataset = kmeans.get_dataset(10000)
+    centroids, assignments = kmeans.compute_kmeans(dataset, 4, 1000)
+    print(assignments)
 
 main()
