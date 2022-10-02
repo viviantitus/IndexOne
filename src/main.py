@@ -11,6 +11,6 @@ args = parser.parse_args()
 
 @profileit(enabled=args.profile)
 def main():
-    print("not sure what to implement!")
+    return "not sure what to implement!"
 
 main()

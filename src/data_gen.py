@@ -12,4 +12,4 @@ def slice_func(big_number, slice_number):
 
 def dataset_generator(dataset_size: int, dimension: int = 512):
     for slice_size in slice_func(dataset_size, 1000000):
-        yield torch.rand(size=(dimension, slice_size))
+        yield torch.rand(size=(slice_size, dimension))
