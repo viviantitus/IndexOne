@@ -13,7 +13,7 @@ args = parser.parse_args()
 @profileit(enabled=args.profile)
 def main():
     dataset = torch.cat([kmeans.get_dataset(100, 512) * 2, kmeans.get_dataset(100, 512)])
-    variance, centroids, assignments = kmeans.compute_kmeans(dataset, num_centroids=2, num_iterations=1000)
+    variance, centroids, assignments = kmeans.compute_kmeans(dataset, num_centroids=2, num_iterations=1000, distance_type="euclidean")
     print(assignments.unique(return_counts=True))
     print(variance)
 

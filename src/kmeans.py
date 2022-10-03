@@ -34,7 +34,7 @@ def calculate_variance(dataset: torch.Tensor, assignments: torch.Tensor, centroi
     return variance
 
 
-def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations):    
+def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations, distance_type):    
     ret_centroids = None
     ret_assignments = None
     ret_variance = float('inf')
@@ -42,7 +42,7 @@ def compute_kmeans(dataset: torch.Tensor, num_centroids, num_iterations):
         centroids = get_random_samples_from_dataset(dataset, num_centroids)
         variance = float('inf')
         while True:
-            distances = compute_distance(centroids, dataset, type="euclidean")
+            distances = compute_distance(centroids, dataset, type=distance_type)
             assignments = torch.argmin(distances, dim=0)
             curr_variance = calculate_variance(dataset, assignments, centroids)
             if variance - curr_variance < 0.001:
