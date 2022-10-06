@@ -11,7 +11,7 @@ def dotprod_distance(q, dataset):
     mm = torch.mm(dataset, q.transpose(0,1))
     return - mm.transpose(0, 1)
 
-def compute_distance(q, dataset, type: str = "cosine"):
+def compute_distance(q, dataset, type: str = "euclidean"):
     if type == "cosine":
         return cosine_distance(q, dataset)
     elif type == "euclidean":
