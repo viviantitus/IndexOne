@@ -16,3 +16,6 @@ Total time taken for each algorithm for computing distance of query to 1 billion
 Algorithm                    Time
 cosine_similarity             81.20s
 dot_product                   17.22s
+
+
+Total time taken to compute kmeans is 69 seconds for 10000 vectors of dimension 512
