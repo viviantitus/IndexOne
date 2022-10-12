@@ -1,6 +1,7 @@
 import torch
 import kmeans
 from distance import compute_distance
+from profiler import profileit
 
 
 def split_to_subvecs(feature_vectors, num_chunks):
@@ -12,7 +13,7 @@ def train(feature_vectors, num_chunks, num_centroids_per_chunk, chunk_dim):
     assignments = torch.zeros((feature_vectors.size()[0], num_chunks))
     for i, sub_vec in enumerate(split_to_subvecs(feature_vectors, num_chunks=num_chunks)):
         _, codes[i], assignments[:, i] = kmeans.compute_kmeans(sub_vec, num_centroids=num_centroids_per_chunk, num_iterations=30)
-    return codes, assignments
+    return codes, assignments.type(torch.IntTensor)
 
 def compute_distance_map_for_centroids(codes, num_chunks, num_centroids_per_chunk):
     distance_map = torch.zeros((num_chunks, num_centroids_per_chunk, num_centroids_per_chunk))
