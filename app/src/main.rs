@@ -6,6 +6,6 @@ fn main() {
     let tensor = tensor::tensor::Tensor::new(&size);
 
     // println!("{}",  unsafe { *(tensor.add(2))});
-    println!("{:?}",  tensor.size());
+    tensor.debug();
 
 }

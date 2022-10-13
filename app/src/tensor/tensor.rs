@@ -27,4 +27,12 @@ impl Tensor{
     pub fn size(&self) -> &[usize]{
         unsafe { std::slice::from_raw_parts(self.size, self.dim) }
     }
+
+    pub fn dim(&self) -> usize{
+        self.dim
+    }
+
+    pub fn debug(&self){
+        println!("tensor size = {:?}  dim = {}",  self.size(), self.dim());
+    }
 }
