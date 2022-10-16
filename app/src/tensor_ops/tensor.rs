@@ -1,6 +1,9 @@
 extern crate libc;
+use std::fmt::Debug;
 use std::mem;
-use std::ops::Index;
+use std::ops::{Index, Range};
+use std::cmp::PartialOrd;
+use rand::distributions::uniform::SampleUniform;
 use rand::{thread_rng, Rng};
 use rand::distributions::{Distribution, Standard};
 
@@ -11,8 +14,8 @@ pub struct Tensor<'a, T>{
     dim: usize
 }
 
-impl<'a, T> Tensor<'a, T>{
-    pub fn new(size: &'a [usize], assign_type: &str) -> Self where Standard: Distribution<T>{
+impl<'a, T: SampleUniform + PartialOrd + Clone> Tensor<'a, T>{
+    pub fn new(size: &'a [usize], assign_type: &str, range: Option<Range<T>>) -> Self where Standard: Distribution<T>{
         let mut size_of_ndarray: usize = 1;
         for i in 0..size.len(){
             size_of_ndarray *= size[i];
@@ -27,18 +30,27 @@ impl<'a, T> Tensor<'a, T>{
         };
         let tensor: Tensor<T> = Tensor{ data: data, size: &size, dim: size.len()};
         match assign_type{
-            "random" => tensor.assign_random_values(),
+            "random" => tensor.assign_random_values(range),
             _ => panic!("assignment type not implemented")
         }
         tensor
     }
 
-    pub fn assign_random_values(&self) where Standard: Distribution<T>{
+    pub fn assign_random_values(&self, range: Option<Range<T>>) where Standard: Distribution<T>{
         let mut rng = thread_rng();
         let size_of_ndarray = self.get_total_len();
-        unsafe{
-            for i in 0..size_of_ndarray{
-                *self.data.add(i) = rng.gen();
+
+        match range{
+            Some(x) => 
+            unsafe{
+                for i in 0..size_of_ndarray{
+                    *self.data.add(i) = rng.gen_range(x.clone());
+                }
+            },
+            None => unsafe{
+                for i in 0..size_of_ndarray{
+                    *self.data.add(i) = rng.gen();
+                }
             }
         }
     }
@@ -70,7 +82,7 @@ impl<'a, T> Tensor<'a, T>{
 }
 
 
-impl<'a, T> Index<&[usize]> for Tensor<'a, T> {
+impl<'a, T: SampleUniform + PartialOrd + Clone> Index<&[usize]> for Tensor<'a, T> {
     type Output = T;
     fn index(&self, index: &[usize]) -> &Self::Output {
         if index.len() != self.dim(){
