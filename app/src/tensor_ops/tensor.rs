@@ -79,15 +79,25 @@ impl<'a, T: SampleUniform + PartialOrd + Clone> Tensor<'a, T>{
         }
         ret_val
     }
+
+    fn assert_index(&self, index: &[usize]){
+        if index.len() != self.dim(){
+            panic!("Index size does not match tensor dimension size");
+        }
+
+        for i in 0..self.dim(){
+            if index[i] >= self.size[i]{
+                panic!("Index of Dim {} out of bounds", i)
+            }
+        }
+    }
 }
 
 
 impl<'a, T: SampleUniform + PartialOrd + Clone> Index<&[usize]> for Tensor<'a, T> {
     type Output = T;
     fn index(&self, index: &[usize]) -> &Self::Output {
-        if index.len() != self.dim(){
-            panic!("Index size does not match tensor dimension size");
-        }
+        self.assert_index(index);
         let mut data_index = 0;
 
         for i in 0..self.dim(){
