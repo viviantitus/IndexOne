@@ -1,10 +1,12 @@
 mod tensor_ops;
-use crate::tensor_ops::tensor;
+use crate::tensor_ops::tensor::Tensor;
+
 
 fn main() {
-    let size = [5, 3, 3];
-    let tensor = tensor::Tensor::<f32>::new(&size, "random", Some(-0.1..1.0));
+    let size = [1000, 512];
+    let tensor1 = Tensor::<f32>::new(&size, "random", None);
+    let tensor2 = Tensor::<f32>::new(&size, "random", None);
 
-    let a = &tensor[&[0, 0, 2]];
+    let a = tensor1.euclidean_distance(tensor2, 2);
     println!("{:?}", a);
 }
