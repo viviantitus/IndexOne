@@ -9,32 +9,31 @@ use rand::distributions::{Distribution, Standard};
 
 
 #[derive(Debug)]
-pub struct Tensor<'a, 'b, T>{
+pub struct Tensor<'a, T>{
     data: &'a mut [T],
-    size: TensorSize<'b>,
+    size: TensorSize,
     dim: usize
 }
 
-impl<'a, 'b, T: SampleUniform + PartialOrd + Clone> Tensor<'a, 'b, T>{
-    pub fn new(size: &'b [usize], assign_type: &str, range: Option<Range<T>>) -> Self where Standard: Distribution<T>{
-        let mut size_of_ndarray: usize = 1;
-        for i in 0..size.len(){
-            size_of_ndarray *= size[i];
-        }
+impl<'a, T: SampleUniform + PartialOrd + Clone> Tensor<'a, T>{
+    pub fn new(size: Vec<usize>, random: bool, range: Option<Range<T>>) -> Self where Standard: Distribution<T>{
+        let tensor_size = TensorSize::new(size);
+        Self::create_with_tensorsize(tensor_size, random, range)
+    }
 
-        let data = match size.len(){
+    fn create_with_tensorsize(tensor_size: TensorSize, random: bool, range: Option<Range<T>>) -> Self where Standard: Distribution<T>{
+        let data = match tensor_size.len(){
             0 => panic!("Size has to be greater than zero"),
             _ => unsafe {
-                    let raw_ptr: *mut T = libc::malloc(mem::size_of::<T>() * size_of_ndarray) as *mut T;
-                    let slice = std::slice::from_raw_parts_mut(raw_ptr, size_of_ndarray);
+                    let raw_ptr: *mut T = libc::malloc(mem::size_of::<T>() * tensor_size.total_elements()) as *mut T;
+                    let slice = std::slice::from_raw_parts_mut(raw_ptr, tensor_size.total_elements());
                     slice
                 }
         };
-        let tensor_size = TensorSize::new(size);
-        let mut tensor: Tensor<T> = Tensor{ data: data, size: tensor_size, dim: size.len()};
-        match assign_type{
-            "random" => tensor.assign_random_values(range),
-            _ => panic!("assignment type not implemented")
+        let dim = tensor_size.len();
+        let mut tensor: Tensor<T> = Tensor{ data: data, size: tensor_size, dim: dim};
+        if random{
+            tensor.assign_random_values(range);
         }
         tensor
     }
@@ -52,28 +51,35 @@ impl<'a, 'b, T: SampleUniform + PartialOrd + Clone> Tensor<'a, 'b, T>{
         }
     }
 
-    pub fn size(&self) -> TensorSize{
-        self.size
+    pub fn size(&self) -> &TensorSize{
+        &self.size
     }
 
     pub fn dim(&self) -> usize{
         self.dim
     }
 
-    pub fn euclidean_distance(&self, other: Tensor<T>, dim: usize) -> Tensor<'a, 'b, T>  where Standard: Distribution<T>{
-        if self.size() != other.size(){
+    pub fn euclidean_distance(&self, other: Tensor<T>) -> Tensor<'a, T>  where Standard: Distribution<T>{
+        if self.size != other.size{
             panic!("Euclidean: Dimensions do not match");
         }
-        let ret = Tensor::new(&[2,2,2], "random", None);
+        // TODO: Dimension for euclidean distance is set to last
+        let ret = Tensor::create_with_tensorsize(self.size.copy(), false, None);
         return ret;
     }
 }
 
+#[derive(Debug)]
+pub enum Indexer {
+    range(Range<usize>),
+    number(usize)
+}
 
-impl<'a, 'b, T: SampleUniform + PartialOrd + Clone> Index<&[usize]> for Tensor<'a, 'b, T> {
+
+impl<'a, T: SampleUniform + PartialOrd + Clone> Index<Vec<usize>> for Tensor<'a, T> {
     type Output = T;
-    fn index(&self, index: &[usize]) -> &Self::Output {
-        self.size.assert_index(index);
+    fn index(&self, index: Vec<usize>) -> &Self::Output {
+        self.size.assert_index(&index);
         let mut data_index = 0;
 
         for i in 0..self.dim(){
