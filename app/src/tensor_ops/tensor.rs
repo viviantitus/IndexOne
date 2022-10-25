@@ -75,7 +75,6 @@ pub enum Indexer {
     number(usize)
 }
 
-
 impl<'a, T: SampleUniform + PartialOrd + Clone> Index<Vec<usize>> for Tensor<'a, T> {
     type Output = T;
     fn index(&self, index: Vec<usize>) -> &Self::Output {
