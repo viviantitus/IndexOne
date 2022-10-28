@@ -75,7 +75,6 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
         let mut data_iter: usize = 0;
         for indx_ in 0..self.data.len(){
             if self.size.is_within_sliceindex(&sliceindex, indx_){
-                println!("{} found", indx_);
                 data[data_iter] = self.data[indx_];
                 data_iter += 1;
             }
@@ -91,12 +90,5 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
         // TODO: Dimension for euclidean distance is set to last
         let ret = Tensor::create_with_tensorsize(self.size.clone());
         return ret;
-    }
-}
-
-impl<'a, T: SampleUniform + PartialOrd + Copy> Index<Vec<usize>> for Tensor<'a, T> {
-    type Output = T;
-    fn index(&self, index: Vec<usize>) -> &Self::Output {
-        &self.data[self.size.calc_seq_index(index)]
     }
 }

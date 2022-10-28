@@ -23,16 +23,16 @@ impl TensorSize{
             val.push(data)
         }
         let cumulative = Self::create_cumulative(&val);
-        TensorSize { data: val, cumulative: cumulative }
-    }
+        TensorSize { data: val, cumulative: cumulative }    }
 
     fn create_cumulative(val: &Vec<usize>) -> Vec<usize>{
         let mut cumulative: Vec<usize> = vec![];
         let mut ret_val:usize = 1;
-        for i in 1..val.len(){
+        for i in (1..val.len()).rev(){
             ret_val *= val[i];
             cumulative.push(ret_val.clone());
         }
+        cumulative.reverse();
         cumulative
     }
 
@@ -78,18 +78,22 @@ impl TensorSize{
 
     #[inline(always)]
     pub fn is_within_sliceindex(&self, sliceindex: &Vec<Indexer>, seq_index: usize) -> bool{
+        let mut offset: usize = 0;
         for indx_ in 0..sliceindex.len(){
-            let denom = if indx_ == sliceindex.len()-1 {1} else {self.cumulative[indx_]};
+            let dim_index: usize = 
+                if indx_ == sliceindex.len()-1 {
+                    usize::from(seq_index%self.cumulative[indx_-1])
+                } else {
+                    usize::from((seq_index - offset)/self.cumulative[indx_])
+                };
             let cond = match sliceindex[indx_].clone() {
-                Indexer::Number(x) => usize::from(seq_index/denom) == usize::from(x),
-                Indexer::SliceRange(x) => usize::from(seq_index/denom) >= x.start && usize::from(seq_index/denom) < x.end,
+                Indexer::Number(x) => dim_index == x,
+                Indexer::SliceRange(x) => dim_index >= x.start && dim_index < x.end,
             };
-            if indx_ > 0{
-                println!("{:?} {:?}", denom, sliceindex[indx_]);
-            }
             if !cond{
                 return false;
             }
+            offset += if indx_!= sliceindex.len()-1 {dim_index * self.cumulative[indx_]} else {0};
         }
         return true
     }
