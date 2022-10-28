@@ -40,13 +40,17 @@ impl TensorSize{
         return self.data.len();
     }
 
-    fn assert_index(&self, index: &Vec<usize>){
+    fn assert_index(&self, index: &Vec<Indexer>){
         if index.len() != self.dim(){
             panic!("Index size does not match tensor dimension size");
         }
 
         for i in 0..self.dim(){
-            if index[i] >= self.data[i]{
+            let assert_index = match index[i].clone() {
+                Indexer::Number(x) => x >= self.data[i],
+                Indexer::SliceRange(x) => x.start >= self.data[i] || x.end >= self.data[i],
+            };
+            if assert_index{
                 panic!("Index of Dim {} out of bounds", i)
             }
         }
@@ -60,24 +64,31 @@ impl TensorSize{
         size_of_ndarray
     }
 
-    pub fn calc_seq_index(&self, index: Vec<usize>) -> usize{
+    pub fn calc_seq_index(&self, index: Vec<Indexer>) -> usize{
         self.assert_index(&index);
 
         let mut data_index = 0;
 
         for i in 0..self.data.len(){
-            if i == self.data.len() -1 {
-                data_index += index[i];
+            match index[i].clone() {
+                Indexer::Number(x) => {
+                    if i == self.data.len() -1 {
+                        data_index += x;
+                    }
+                    else{
+                        data_index += self.cumulative[i] * x;
+                    }
+                }
+                Indexer::SliceRange(_) => panic!("Cannot implement sequence calculation for slices")
             }
-            else{
-                data_index += self.cumulative[i] * index[i];
-            }
+            
         }
         data_index
     }
 
     #[inline(always)]
     pub fn is_within_sliceindex(&self, sliceindex: &Vec<Indexer>, seq_index: usize) -> bool{
+        self.assert_index(&sliceindex);
         let mut offset: usize = 0;
         for indx_ in 0..sliceindex.len(){
             let dim_index: usize = 
