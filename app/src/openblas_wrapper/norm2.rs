@@ -2,7 +2,7 @@ extern crate libc;
 extern crate openblas_src;
 
 use libc::{c_float, c_double, c_int};
-use crate::tensor_ops::tensor::Tensor;
+use crate::schema::tensor::Tensor;
 
 
 extern "C" {

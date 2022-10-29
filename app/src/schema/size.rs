@@ -128,7 +128,7 @@ impl PartialEq for TensorSize{
 
 #[cfg(test)]
 mod size_tests {
-    use crate::tensor_ops::size::TensorSize;
+    use crate::schema::size::TensorSize;
     use crate::t;
 
     #[test]

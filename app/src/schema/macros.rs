@@ -3,7 +3,7 @@
 #[macro_export]
 macro_rules! t {
     ($($x:expr),*) => {{
-        use crate::tensor_ops::index::Indexer;
+        use crate::schema::index::Indexer;
         use std::ops::Range;
 
         trait IndexEnumConverter {

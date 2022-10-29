@@ -1,9 +1,9 @@
 extern crate libc;
-use crate::tensor_ops::size::TensorSize;
-use crate::tensor_ops::index::Indexer;
+use crate::schema::size::TensorSize;
+use crate::schema::index::Indexer;
 use std::fmt::Debug;
 use std::mem;
-use std::ops::{Index, Range};
+use std::ops::Range;
 use rand::{thread_rng, Rng};
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
@@ -37,7 +37,7 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
         data
     }
 
-    fn create_with_tensorsize(tensor_size: TensorSize) -> Self{
+    pub fn create_with_tensorsize(tensor_size: TensorSize) -> Self{
         let data = Self::alloc_mem_for_size(&tensor_size);
         Self::create_with_data_copy(data, tensor_size)
     }
@@ -81,18 +81,6 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
         }
 
         Self::create_with_data_copy(data, new_size)
-    }
-
-    pub fn euclidean_distance(&self, other: &Tensor<T>) -> Tensor<'a, T>  where Standard: Distribution<T>{
-        if self.size != other.size{
-            panic!("Euclidean: Dimensions do not match");
-        }
-        let mut new_size = self.size.clone();
-        new_size.remove_dim(self.size.dim()-1);
-        // TODO: Dimension for euclidean distance is set to last
-        let ret = Tensor::create_with_tensorsize(new_size);
-
-        return ret;
     }
 }
 
