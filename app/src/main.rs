@@ -1,3 +1,5 @@
+mod tensor_ops;
+
 fn main() {
-    println!("Hello, world!");
+    println!("hello world");
 }
