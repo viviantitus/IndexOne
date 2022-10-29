@@ -10,11 +10,11 @@ extern "C" {
     pub fn dnrm2_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> c_double;
 }
 
-trait Nrm2<T> {
+trait Norm2<T> {
     fn norm2(&mut self) -> T;
 }
 
-impl Nrm2<f32> for Tensor<'_, f32> {
+impl Norm2<f32> for Tensor<'_, f32> {
     fn norm2(&mut self) -> f32
     { 
         unsafe {
@@ -30,7 +30,7 @@ impl Nrm2<f32> for Tensor<'_, f32> {
     }
 }
 
-impl Nrm2<f64> for Tensor<'_, f64> {
+impl Norm2<f64> for Tensor<'_, f64> {
     fn norm2(&mut self) -> f64
     { 
         unsafe {
