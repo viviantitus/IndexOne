@@ -87,8 +87,26 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
         if self.size != other.size{
             panic!("Euclidean: Dimensions do not match");
         }
+        let mut new_size = self.size.clone();
+        new_size.remove_dim(self.size.dim()-1);
         // TODO: Dimension for euclidean distance is set to last
-        let ret = Tensor::create_with_tensorsize(self.size.clone());
+        let ret = Tensor::create_with_tensorsize(new_size);
+
         return ret;
+    }
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::t;
+
+    #[test]
+    fn test_slice_size() {
+        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], true, None);
+        let sliced_tensor = tensor1.slice(t![33..400, 5..10, 3]);
+        assert!(sliced_tensor.size() == &TensorSize::new(vec![367, 5, 1]));
     }
 }
