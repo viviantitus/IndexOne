@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use super::index::Indexer;
 
 #[derive(Debug, Clone)]
@@ -113,6 +115,13 @@ impl TensorSize{
         return true
     }
 
+}
+
+impl Index<usize> for TensorSize {
+    type Output = usize;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
 }
 
 impl PartialEq for TensorSize{
