@@ -39,10 +39,19 @@ mod tests {
 
     #[test]
     fn test_euclidean() {
-        let mut t1 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
+        let t1 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
         let t2 = t1.clone();
 
         let result = t1.euclidean(&t2);
         assert!(result == 0.0);
+    }
+
+    #[test]
+    fn test_euclidean2() {
+        let t1 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
+        let t2 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
+
+        let result = t1.euclidean(&t2);
+        assert!(result != 0.0);
     }
 }

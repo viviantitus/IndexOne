@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn test_subtract() {
-        let mut t1 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
+        let t1 = Tensor::<f32>::new(vec![10, 30, 10], true, None);
         let t2 = t1.clone();
 
         let result = t1.sub(&t2);
