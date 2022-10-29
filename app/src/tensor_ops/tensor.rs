@@ -10,7 +10,7 @@ use rand::distributions::{Distribution, Standard};
 
 #[derive(Debug)]
 pub struct Tensor<'a, T>{
-    data: &'a mut [T],
+    pub data: &'a mut [T],
     size: TensorSize,
     dim: usize
 }
