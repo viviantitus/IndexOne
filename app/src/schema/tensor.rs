@@ -3,7 +3,7 @@ use crate::schema::size::TensorSize;
 use crate::schema::index::Indexer;
 use std::fmt::Debug;
 use std::mem;
-use std::ops::Range;
+use std::ops::{Range, Index};
 use rand::{thread_rng, Rng};
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::{Distribution, Standard};
@@ -84,6 +84,21 @@ impl<'a, T: SampleUniform + PartialOrd + Copy> Tensor<'a, T>{
     }
 }
 
+impl<'a, T: SampleUniform + PartialOrd + Copy> Index<Vec<Indexer>> for Tensor<'a, T> {
+    type Output = T;
+    fn index(&self, index: Vec<Indexer>) -> &Self::Output {
+        let data_index = self.size.calc_seq_index(index);
+        &self.data[data_index]
+    }
+}
+
+impl<'a, T: SampleUniform + PartialOrd + Copy> Clone for Tensor<'a, T>  {
+    fn clone(&self) -> Self {
+        let clone = Self::create_with_tensorsize(self.size.clone());
+        clone.data.copy_from_slice(self.data);
+        clone
+    }
+}
 
 
 #[cfg(test)]

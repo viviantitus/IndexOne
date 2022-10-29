@@ -10,7 +10,7 @@ extern "C" {
     pub fn dnrm2_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> c_double;
 }
 
-trait Norm2<T> {
+pub trait Norm2<T> {
     fn norm2(&mut self) -> T;
 }
 
