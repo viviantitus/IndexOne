@@ -1,16 +1,16 @@
-use rand::distributions::uniform::SampleUniform;
 use crate::schema::tensor::Tensor;
+use crate::schema::traits::PartialOrdwithSampling;
 
 
 pub trait Subtract<Rhs=Self> {
     type Output;
-    fn sub(&mut self, other: &Rhs) -> Self::Output;
+    fn sub(&self, other: &Rhs) -> Self::Output;
 }
 
-impl<T: SampleUniform + PartialOrd + Copy  + std::ops::Sub<Output=T>> Subtract for Tensor<'_, T> {
+impl<T: PartialOrdwithSampling + std::ops::Sub<Output=T>> Subtract for Tensor<'_, T> {
     type Output = Self;
 
-    fn sub(&mut self, other: &Tensor<'_, T>) -> Self::Output
+    fn sub(&self, other: &Tensor<T>) -> Self::Output
     { 
         if self.size() != other.size(){
             panic!("Subtract func: Size do not match")

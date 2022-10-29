@@ -1,16 +1,15 @@
 extern crate libc;
 extern crate openblas_src;
-
+extern crate num_traits;
 use libc::{c_float, c_double, c_int};
 use crate::schema::tensor::Tensor;
-
 
 extern "C" {
     pub fn snrm2_(x: *mut c_int, N: *mut c_float, incx: *mut c_int) -> c_float;
     pub fn dnrm2_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> c_double;
 }
 
-pub trait Norm2<T> {
+pub trait Norm2<T>{
     fn norm2(&mut self) -> T;
 }
 
