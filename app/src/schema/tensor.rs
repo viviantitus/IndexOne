@@ -1,9 +1,9 @@
 extern crate libc;
+use crate::ops::memalloc::MemAlloc;
 use crate::schema::size::TensorSize;
 use crate::schema::index::Indexer;
 use std::fmt::Debug;
-use std::mem;
-use std::ops::{Range, Index, IndexMut};
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug)]
 pub struct Tensor<'a, T>{
@@ -19,20 +19,8 @@ impl<'a, T> Tensor<'a, T>{
         tensor
     }
 
-    pub fn alloc_mem_for_size(tensor_size: &TensorSize) -> &'a mut [T]{
-        let data: &mut [T] = match tensor_size.dim(){
-            0 => panic!("Size has to be greater than zero"),
-            _ => unsafe {
-                    let raw_ptr: *mut T = libc::malloc(mem::size_of::<T>() * tensor_size.total_elements()) as *mut T;
-                    let slice = std::slice::from_raw_parts_mut(raw_ptr, tensor_size.total_elements());
-                    slice
-                }
-        };
-        data
-    }
-
     pub fn create_with_tensorsize(tensor_size: TensorSize) -> Self{
-        let data = Self::alloc_mem_for_size(&tensor_size);
+        let data = tensor_size.mem_alloc();
         Self::create_with_data_copy(data, tensor_size)
     }
 

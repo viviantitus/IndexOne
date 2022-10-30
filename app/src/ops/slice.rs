@@ -1,4 +1,5 @@
 use crate::schema::{tensor::Tensor, index::Indexer};
+use crate::ops::memalloc::MemAlloc;
 
 
 pub trait Slice<T: Copy> {
@@ -12,7 +13,7 @@ impl<T: Copy> Slice<T> for Tensor<'_, T> {
 
     fn slice(&mut self, slice_vec: Vec<Indexer>) -> Self::Output{
         let new_size = self.size().slice(&slice_vec);
-        let data = Self::alloc_mem_for_size(&new_size);
+        let data = new_size.mem_alloc();
 
         let mut data_iter: usize = 0;
         for indx_ in 0..self.data.len(){
@@ -29,7 +30,7 @@ impl<T: Copy> Slice<T> for Tensor<'_, T> {
         let current_size = self.size();
         let slice_vec = current_size.create_slicevec(&slice, dim);
         let new_size = current_size.slice(&slice_vec);
-        let data = Self::alloc_mem_for_size(&new_size);
+        let data = new_size.mem_alloc();
 
         let mut data_iter: usize = 0;
         for indx_ in 0..self.data.len(){
