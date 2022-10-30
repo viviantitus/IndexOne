@@ -74,7 +74,7 @@ impl<'a, T: PartialOrdwithSampling> Tensor<'a, T>{
 
         let mut data_iter: usize = 0;
         for indx_ in 0..self.data.len(){
-            if self.size.is_within_sliceindex(&sliceindex, indx_){
+            if self.size.is_within_sliceindex(sliceindex.clone(), indx_){
                 data[data_iter] = self.data[indx_];
                 data_iter += 1;
             }
@@ -131,6 +131,6 @@ mod tests {
     #[should_panic]
     fn test_slice_size4() {
         let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], false, None);
-        let sliced_tensor = tensor1.slice(t![500.., ..30, ..]);
+        let _sliced_tensor = tensor1.slice(t![500.., ..30, ..]);
     }
 }

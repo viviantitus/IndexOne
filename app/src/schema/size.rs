@@ -82,7 +82,7 @@ impl TensorSize{
         let mut data_index = 0;
 
         for i in 0..self.data.len(){
-            match index[i].clone() {
+            match index[i] {
                 Indexer::Number(x) => {
                     if i == self.data.len() -1 {
                         data_index += x;
@@ -102,7 +102,7 @@ impl TensorSize{
     }
 
     #[inline(always)]
-    pub fn is_within_sliceindex(&self, sliceindex: &Vec<Indexer>, seq_index: usize) -> bool{
+    pub fn is_within_sliceindex(&self, sliceindex: Vec<Indexer>, seq_index: usize) -> bool{
         self.assert_index(&sliceindex);
         let mut offset: usize = 0;
         for indx_ in 0..sliceindex.len(){
@@ -155,7 +155,7 @@ mod size_tests {
     #[test]
     fn test_is_within_range() {
         let size = TensorSize::new(vec![5, 10, 2, 5]);
-        let cond = size.is_within_sliceindex(&t![3, 3, 1, 4], 339);
+        let cond = size.is_within_sliceindex(t![3, 3, 1, 4], 339);
         assert!(cond);
     }
 
@@ -163,6 +163,6 @@ mod size_tests {
     #[should_panic]
     fn test_assert_index() {
         let size = TensorSize::new(vec![5, 10, 2, 5]);
-        size.is_within_sliceindex(&t![3, 3, 1, 6], 339);
+        size.is_within_sliceindex(t![3, 3, 1, 6], 339);
     }
 }
