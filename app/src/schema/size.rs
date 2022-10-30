@@ -14,13 +14,16 @@ impl TensorSize{
         TensorSize { data: val, cumulative: cumulative }
     }
 
-    pub fn create_with_sliceindex(sliceindex: &Vec<Indexer>) -> Self{
+    pub fn create_with_sliceindex(&self, sliceindex: &Vec<Indexer>) -> Self{
 
         let mut val : Vec<usize> = vec![];
         for indx_ in 0..sliceindex.len(){
             let data = match sliceindex[indx_].clone(){
                 Indexer::Number(_) => 1,
-                Indexer::SliceRange(x) => x.end - x.start
+                Indexer::Range(x) => x.end - x.start,
+                Indexer::RangeFrom(x) => self[indx_] - x.start,
+                Indexer::RangeTo(x) => x.end,
+                Indexer::RangeFull(_) => self[indx_]
             };
             val.push(data)
         }
@@ -54,7 +57,10 @@ impl TensorSize{
         for i in 0..self.dim(){
             let assert_index = match index[i].clone() {
                 Indexer::Number(x) => x >= self.data[i],
-                Indexer::SliceRange(x) => x.start >= self.data[i] || x.end >= self.data[i],
+                Indexer::Range(x) => x.start >= self.data[i] || x.end > self.data[i] || x.end <= x.start,
+                Indexer::RangeFrom(x) => x.start >= self.data[i],
+                Indexer::RangeTo(x) => x.end > self.data[i],
+                Indexer::RangeFull(_) => false
             };
             if assert_index{
                 panic!("Index of Dim {} out of bounds", i)
@@ -85,7 +91,10 @@ impl TensorSize{
                         data_index += self.cumulative[i] * x;
                     }
                 }
-                Indexer::SliceRange(_) => panic!("Cannot implement sequence calculation for slices")
+                Indexer::Range(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeFrom(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeTo(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeFull(_) => panic!("Cannot implement sequence calculation for slices")
             }
             
         }
@@ -105,7 +114,10 @@ impl TensorSize{
                 };
             let cond = match sliceindex[indx_].clone() {
                 Indexer::Number(x) => dim_index == x,
-                Indexer::SliceRange(x) => dim_index >= x.start && dim_index < x.end,
+                Indexer::Range(x) => dim_index >= x.start && dim_index < x.end,
+                Indexer::RangeFrom(x) => dim_index >= x.start,
+                Indexer::RangeTo(x) => dim_index < x.end,
+                Indexer::RangeFull(_) => true
             };
             if !cond{
                 return false;

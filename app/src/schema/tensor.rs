@@ -69,7 +69,7 @@ impl<'a, T: PartialOrdwithSampling> Tensor<'a, T>{
     }
 
     pub fn slice(&mut self, sliceindex: Vec<Indexer>) -> Self{
-        let new_size = TensorSize::create_with_sliceindex(&sliceindex);
+        let new_size = self.size().create_with_sliceindex(&sliceindex);
         let data = Self::alloc_mem_for_size(&new_size);
 
         let mut data_iter: usize = 0;
@@ -108,8 +108,29 @@ mod tests {
 
     #[test]
     fn test_slice_size() {
-        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], true, None);
+        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], false, None);
         let sliced_tensor = tensor1.slice(t![33..400, 5..10, 3]);
         assert!(sliced_tensor.size() == &TensorSize::new(vec![367, 5, 1]));
+    }
+
+    #[test]
+    fn test_slice_size2() {
+        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], false, None);
+        let sliced_tensor = tensor1.slice(t![450.., ..25, ..]);
+        assert!(sliced_tensor.size() == &TensorSize::new(vec![50, 25, 10]));
+    }
+
+    #[test]
+    fn test_slice_size3() {
+        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], false, None);
+        let sliced_tensor = tensor1.slice(t![497..498, 5..30, 3]);
+        assert!(sliced_tensor.size() == &TensorSize::new(vec![1, 25, 1]));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_slice_size4() {
+        let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10], false, None);
+        let sliced_tensor = tensor1.slice(t![500.., ..30, ..]);
     }
 }

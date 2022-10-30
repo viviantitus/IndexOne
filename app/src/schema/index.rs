@@ -1,8 +1,11 @@
-use std::ops::Range;
+use std::ops::{Range, RangeFull, RangeFrom, RangeTo};
 
 
 #[derive(Debug, Clone)]
 pub enum Indexer {
-    SliceRange(Range<usize>),
+    Range(Range<usize>),
+    RangeFrom(RangeFrom<usize>),
+    RangeTo(RangeTo<usize>),
+    RangeFull(RangeFull),
     Number(usize)
 }
