@@ -1,6 +1,6 @@
 use crate::schema::tensor::Tensor;
-use crate::schema::index::Indexer;
 use crate::ops::subtract::Subtract;
+use crate::ops::slicelinear::SliceLinear;
 use crate::openblas_wrapper::norm2::Norm2;
 
 
@@ -29,7 +29,7 @@ macro_rules! euclidean_impl {
                 let len_of_dim = self.size()[self.dim()-1];
 
                 for i in 0..total_elements{
-                    result_tensor[i] = sub_tensor.linear_slice(i*len_of_dim..(i+1)*len_of_dim).norm2();
+                    result_tensor[i] = sub_tensor.slice_linear(i*len_of_dim..(i+1)*len_of_dim).norm2();
                 }
                 result_tensor
             }
@@ -44,11 +44,13 @@ euclidean_impl! { f32 f64 }
 
 #[cfg(test)]
 mod tests {
+    use crate::ops::random::Random;
+
     use super::*;
 
     #[test]
     fn test_euclidean() {
-        let mut t1 = Tensor::<f64>::new(vec![10, 30, 10, 3], true, None);
+        let mut t1 = Tensor::<f64>::create_random(vec![10, 30, 10, 3], None);
         let mut t2 = t1.clone();
 
         let result = t1.euclidean(&mut t2);
@@ -57,10 +59,10 @@ mod tests {
 
     #[test]
     fn test_euclidean2() {
-        let mut t1 = Tensor::<f32>::new(vec![10, 30, 10], true, Some(0.0..0.1));
-        let mut t2 = Tensor::<f32>::new(vec![10, 30, 10], true, Some(10.0..10.1));
+        let mut t1 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(0.0..0.00001));
+        let mut t2 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(10.0..10.00001));
 
-        let result = t1.euclidean(&mut t2);
+        let result = t2.euclidean(&mut t1);
         assert!(result[0] != 0.0);
     }
 }
