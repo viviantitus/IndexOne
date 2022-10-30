@@ -59,10 +59,10 @@ mod tests {
 
     #[test]
     fn test_euclidean2() {
-        let mut t1 = Tensor::<f32>::create_random(vec![10, 30, 10], Some(0.0..0.1));
-        let mut t2 = Tensor::<f32>::create_random(vec![10, 30, 10], Some(10.0..10.1));
+        let mut t1 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(0.0..0.00001));
+        let mut t2 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(10.0..10.00001));
 
-        let result = t1.euclidean(&mut t2);
+        let result = t2.euclidean(&mut t1);
         assert!(result[0] != 0.0);
     }
 }

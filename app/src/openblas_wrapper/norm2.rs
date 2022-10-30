@@ -48,29 +48,26 @@ impl Norm2<f64> for Tensor<'_, f64> {
 
 #[cfg(test)]
 mod blas_tests {
+    use crate::schema::size::TensorSize;
+
     use super::*;
 
     #[test]
     fn snorm2() {
-        unsafe {
-            let mut n: i32 = 2;
-            let mut dat = [4.0, 3.0];
-            let x: &mut [f32] = dat.as_mut_slice();
-            let mut incx: i32 = 1;
-            let ret = snrm2_(
-                &mut n as *mut _,
-                x.as_mut_ptr(),
-                &mut incx as *mut _,
-            );
-            assert!(ret == 5.0);
-        }
+        let mut data = [10.0, 10.0, 10.0, 10.0, 10.0];
+        let data_len = data.len();
+        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
+
+        let result: f32 = tensor.norm2();
+        println!("{}", result);
+        assert!(result==22.36068)
     }
 
     #[test]
     fn dnorm2() {
         unsafe {
             let mut n: i32 = 2;
-            let mut dat: [f64; 2] = [4.0, 3.0];
+            let mut dat: [f64; 2] = [3.0, 3.0];
             let x: &mut [f64] = dat.as_mut_slice();
             let mut incx: i32 = 1;
             let ret = dnrm2_(
@@ -78,7 +75,7 @@ mod blas_tests {
                 x.as_mut_ptr(),
                 &mut incx as *mut _,
             );
-            assert!(ret == 5.0);
+            assert!(ret == 4.242640687119285);
         }
     }
 }
