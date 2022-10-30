@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "tensor_lib"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,6 +10,9 @@ libc = "0.2.135"
 num-traits = "0.2"
 rand = "0.8.5"
 openblas-src = "0.10.5"
+
+[dev-dependencies]
+criterion = "0.3"
 
 [profile.dev]
 opt-level = 0
