@@ -4,7 +4,7 @@ use crate::schema::index::Indexer;
 use crate::schema::traits::PartialOrdwithSampling;
 use std::fmt::Debug;
 use std::mem;
-use std::ops::{Range, Index};
+use std::ops::{Range, Index, IndexMut};
 use rand::{thread_rng, Rng};
 use rand::distributions::{Distribution, Standard};
 
@@ -68,18 +68,47 @@ impl<'a, T: PartialOrdwithSampling> Tensor<'a, T>{
         self.dim
     }
 
-    pub fn slice(&mut self, sliceindex: Vec<Indexer>) -> Self{
-        let new_size = self.size().create_with_sliceindex(&sliceindex);
+    pub fn slice(&mut self, slice_vec: Vec<Indexer>) -> Self{
+        let new_size = self.size().slice(&slice_vec);
         let data = Self::alloc_mem_for_size(&new_size);
 
         let mut data_iter: usize = 0;
         for indx_ in 0..self.data.len(){
-            if self.size.is_within_sliceindex(sliceindex.clone(), indx_){
+            if self.size.is_seqindex_within_slice(slice_vec.clone(), indx_){
                 data[data_iter] = self.data[indx_];
                 data_iter += 1;
             }
         }
 
+        Self::create_with_data_copy(data, new_size)
+    }
+
+    pub fn slice_at(&mut self, slice: Indexer, dim: usize) -> Self{
+        let current_size = self.size();
+        let slice_vec = current_size.create_slicevec(&slice, dim);
+        let new_size = current_size.slice(&slice_vec);
+        let data = Self::alloc_mem_for_size(&new_size);
+
+        let mut data_iter: usize = 0;
+        for indx_ in 0..self.data.len(){
+            if self.size.is_seqindex_within_slice(slice_vec.clone(), indx_){
+                data[data_iter] = self.data[indx_];
+                data_iter += 1;
+            }
+        }
+
+        Self::create_with_data_copy(data, new_size)
+    }
+
+    pub fn linear_slice(&mut self, slice: Range<usize>) -> Self{
+        let total_elements = slice.end-slice.start;
+        let new_size = TensorSize::new(vec![slice.end-slice.start]);
+
+        let data: &mut [T];
+        unsafe{
+            let start = slice.start;
+            data = std::slice::from_raw_parts_mut(self.data.as_mut_ptr().add(start), total_elements);
+        }
         Self::create_with_data_copy(data, new_size)
     }
 }
@@ -89,6 +118,19 @@ impl<'a, T: PartialOrdwithSampling> Index<Vec<Indexer>> for Tensor<'a, T> {
     fn index(&self, index: Vec<Indexer>) -> &Self::Output {
         let data_index = self.size.calc_seq_index(index);
         &self.data[data_index]
+    }
+}
+
+impl<'a, T: PartialOrdwithSampling> Index<usize> for Tensor<'a, T> {
+    type Output = T;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+
+impl<'a, T: PartialOrdwithSampling> IndexMut<usize> for Tensor<'a, T> {
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        &mut self.data[index]
     }
 }
 
