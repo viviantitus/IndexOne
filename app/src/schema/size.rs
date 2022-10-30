@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use super::index::Indexer;
 
 #[derive(Debug, Clone)]
@@ -12,18 +14,32 @@ impl TensorSize{
         TensorSize { data: val, cumulative: cumulative }
     }
 
-    pub fn create_with_sliceindex(sliceindex: &Vec<Indexer>) -> Self{
-
-        let mut val : Vec<usize> = vec![];
-        for indx_ in 0..sliceindex.len(){
-            let data = match sliceindex[indx_].clone(){
-                Indexer::Number(_) => 1,
-                Indexer::SliceRange(x) => x.end - x.start
-            };
-            val.push(data)
+    pub fn slice(&self, slice_vec: &Vec<Indexer>) -> Self{
+        let mut data : Vec<usize> = vec![];
+        for i in 0..self.data.len(){
+            data.push(self.match_slice(slice_vec[i].clone(), i))
         }
-        let cumulative = Self::create_cumulative(&val);
-        TensorSize { data: val, cumulative: cumulative }    }
+        let cumulative = Self::create_cumulative(&data);
+        TensorSize { data: data, cumulative: cumulative }    
+    }
+
+    pub fn create_slicevec(&self, slice: &Indexer, dim: usize) -> Vec<Indexer>{
+        let mut slice_vec : Vec<Indexer> = vec![];
+        for i in 0..self.data.len(){
+            slice_vec.push(if dim == i {slice.clone()} else {Indexer::RangeFull(..)});
+        }
+        slice_vec
+    }
+
+    fn match_slice(&self, slice: Indexer, dim: usize) -> usize{
+        match slice.clone(){
+            Indexer::Number(_) => 1,
+            Indexer::Range(x) => x.end - x.start,
+            Indexer::RangeFrom(x) => self[dim] - x.start,
+            Indexer::RangeTo(x) => x.end,
+            Indexer::RangeFull(_) => self[dim]
+        }
+    }
 
     fn create_cumulative(val: &Vec<usize>) -> Vec<usize>{
         let mut cumulative: Vec<usize> = vec![];
@@ -52,7 +68,10 @@ impl TensorSize{
         for i in 0..self.dim(){
             let assert_index = match index[i].clone() {
                 Indexer::Number(x) => x >= self.data[i],
-                Indexer::SliceRange(x) => x.start >= self.data[i] || x.end >= self.data[i],
+                Indexer::Range(x) => x.start >= self.data[i] || x.end > self.data[i] || x.end <= x.start,
+                Indexer::RangeFrom(x) => x.start >= self.data[i],
+                Indexer::RangeTo(x) => x.end > self.data[i],
+                Indexer::RangeFull(_) => false
             };
             if assert_index{
                 panic!("Index of Dim {} out of bounds", i)
@@ -74,7 +93,7 @@ impl TensorSize{
         let mut data_index = 0;
 
         for i in 0..self.data.len(){
-            match index[i].clone() {
+            match index[i] {
                 Indexer::Number(x) => {
                     if i == self.data.len() -1 {
                         data_index += x;
@@ -83,7 +102,10 @@ impl TensorSize{
                         data_index += self.cumulative[i] * x;
                     }
                 }
-                Indexer::SliceRange(_) => panic!("Cannot implement sequence calculation for slices")
+                Indexer::Range(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeFrom(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeTo(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::RangeFull(_) => panic!("Cannot implement sequence calculation for slices")
             }
             
         }
@@ -91,28 +113,37 @@ impl TensorSize{
     }
 
     #[inline(always)]
-    pub fn is_within_sliceindex(&self, sliceindex: &Vec<Indexer>, seq_index: usize) -> bool{
-        self.assert_index(&sliceindex);
+    pub fn is_seqindex_within_slice(&self, slice_vec: Vec<Indexer>, seq_index: usize) -> bool{
+        self.assert_index(&slice_vec);
         let mut offset: usize = 0;
-        for indx_ in 0..sliceindex.len(){
+        for indx_ in 0..self.data.len(){
             let dim_index: usize = 
-                if indx_ == sliceindex.len()-1 {
+                if indx_ == self.data.len()-1 {
                     usize::from(seq_index%self.cumulative[indx_-1])
                 } else {
                     usize::from((seq_index - offset)/self.cumulative[indx_])
                 };
-            let cond = match sliceindex[indx_].clone() {
+            let cond = match slice_vec[indx_].clone() {
                 Indexer::Number(x) => dim_index == x,
-                Indexer::SliceRange(x) => dim_index >= x.start && dim_index < x.end,
+                Indexer::Range(x) => dim_index >= x.start && dim_index < x.end,
+                Indexer::RangeFrom(x) => dim_index >= x.start,
+                Indexer::RangeTo(x) => dim_index < x.end,
+                Indexer::RangeFull(_) => true
             };
             if !cond{
                 return false;
             }
-            offset += if indx_!= sliceindex.len()-1 {dim_index * self.cumulative[indx_]} else {0};
+            offset += if indx_!= self.data.len()-1 {dim_index * self.cumulative[indx_]} else {0};
         }
         return true
     }
+}
 
+impl Index<usize> for TensorSize {
+    type Output = usize;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
 }
 
 impl PartialEq for TensorSize{
@@ -128,13 +159,13 @@ impl PartialEq for TensorSize{
 
 #[cfg(test)]
 mod size_tests {
-    use crate::tensor_ops::size::TensorSize;
+    use crate::schema::size::TensorSize;
     use crate::t;
 
     #[test]
     fn test_is_within_range() {
         let size = TensorSize::new(vec![5, 10, 2, 5]);
-        let cond = size.is_within_sliceindex(&t![3, 3, 1, 4], 339);
+        let cond = size.is_seqindex_within_slice(t![3, 3, 1, 4], 339);
         assert!(cond);
     }
 
@@ -142,6 +173,6 @@ mod size_tests {
     #[should_panic]
     fn test_assert_index() {
         let size = TensorSize::new(vec![5, 10, 2, 5]);
-        size.is_within_sliceindex(&t![3, 3, 1, 6], 339);
+        size.is_seqindex_within_slice(t![3, 3, 1, 6], 339);
     }
 }
