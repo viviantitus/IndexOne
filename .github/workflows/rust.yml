@@ -19,3 +19,5 @@ jobs:
       run: cargo build --verbose --manifest-path tensor_lib/Cargo.toml
     - name: Run tests
       run: cargo test --verbose --manifest-path tensor_lib/Cargo.toml
+    - name: Run Benchmark
+      run: cargo bench --verbose --manifest-path tensor_lib/Cargo.toml

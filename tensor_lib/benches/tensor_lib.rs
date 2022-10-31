@@ -4,6 +4,6 @@ use criterion::criterion_main;
 mod benchmarks;
 
 criterion_main! {
-    blas_benchmark::benches,
-    ops_benchmark::benches
+    blas_benchmark::blas,
+    ops_benchmark::ops
 }

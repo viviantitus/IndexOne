@@ -5,16 +5,27 @@ use criterion::{
     Criterion
 };
 
-pub fn norm2_benchmark(c: &mut Criterion) {
+pub fn norm_benchmark(c: &mut Criterion) {
+
     let mut tensor = black_box(
-        Tensor::create_random(vec![2], Some(-1.0..1.0))
+        Tensor::create_random(vec![512], Some(-1.0..1.0))
     );
 
     c.bench_function(
-        "norm2 algorithm", 
-        |b| b.iter(|| tensor.norm2())
-    );
+        "norm2 algorithm", |b| {
+            b.iter_custom(|iters| {
+                let mut time = std::time::Duration::new(0, 0);
+                for _ in 0..iters {
+                    let instant = std::time::Instant::now();
+                    let _value = tensor.norm2();
+                    let elapsed = instant.elapsed();
+                    time += elapsed;
+                }
+                time
+            })
+        });
+
 }
 
 
-criterion_group!(benches, norm2_benchmark);
+criterion_group!(blas, norm_benchmark);

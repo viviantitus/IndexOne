@@ -7,26 +7,48 @@ use criterion::{
 
 fn subtract_benchmark(c: &mut Criterion) {
     let t1 = black_box(
-        Tensor::<f32>::create_random(vec![10], None)
+        Tensor::<f32>::create_random(vec![1000], None)
     );
 
     let t2 = black_box(
-        Tensor::<f32>::create_random(vec![10], None)
+        Tensor::<f32>::create_random(vec![1000], None)
     );
 
+
     c.bench_function(
-        "subtract algorithm", 
-        |b| b.iter(|| t1.sub(&t2))
-    );
+        "subtract algorithm", |b| {
+            b.iter_custom(|iters| {
+                let mut time = std::time::Duration::new(0, 0);
+                for _ in 0..iters {
+                    let instant = std::time::Instant::now();
+                    let _value = t1.sub(&t2);
+                    let elapsed = instant.elapsed();
+                    time += elapsed;
+                }
+                time
+            })
+        });
+    
 }
 
 fn create_rand_benchmark(c: &mut Criterion) {
 
     c.bench_function(
-        "random tensor creation", 
-        |b| b.iter(|| Tensor::create_random(vec![10], Some(-1.0..1.0)))
-    );
+        "create rand tensor", |b| {
+            b.iter_custom(|iters| {
+                let mut time = std::time::Duration::new(0, 0);
+                for _ in 0..iters {
+                    let instant = std::time::Instant::now();
+                    let _value = Tensor::create_random(vec![1], Some(-1.0..1.0));
+                    let elapsed = instant.elapsed();
+                    time += elapsed;
+                }
+                time
+            })
+        });
 }
 
 
-criterion_group!(benches, subtract_benchmark, create_rand_benchmark);
+
+
+criterion_group!(ops, create_rand_benchmark, subtract_benchmark);
