@@ -1,37 +1,25 @@
 use crate::schema::tensor::Tensor;
 use crate::ops::subtract::Subtract;
-use crate::ops::slicelinear::SliceLinear;
 use crate::openblas_wrapper::norm2::Norm2;
 
 
-pub trait Euclidean<Rhs=Self> {
+pub trait Euclidean<T, Rhs=Self> {
     type Output;
-    fn euclidean(&mut self, other: &mut Rhs) -> Self::Output;
+    fn euclidean(&self, other: &Rhs) -> T;
 }
 
 macro_rules! euclidean_impl {
     ($($t:ty)*) => ($(
 
-        impl<'a> Euclidean for Tensor<'a, $t> {
+        impl<'a> Euclidean<$t> for Tensor<'a, $t> {
             type Output = Tensor<'a, $t>;
 
-            fn euclidean(&mut self, other: &mut Tensor<'_, $t>) -> Self::Output {
+            fn euclidean(&self, other: &Tensor<'_, $t>) -> $t {
                 if self.size() != other.size(){
                     panic!("Euclidean: Dimensions do not match");
                 }
-                let mut size_copy = self.size().clone();
-                size_copy.remove_dim(self.dim()-1);
-
                 let mut sub_tensor = self.sub(&other);
-                let total_elements = size_copy.total_elements();
-                let mut result_tensor: Tensor<'_, $t> = Tensor::create_with_tensorsize(size_copy);
-
-                let len_of_dim = self.size()[self.dim()-1];
-
-                for i in 0..total_elements{
-                    result_tensor[i] = sub_tensor.slice_linear(i*len_of_dim..(i+1)*len_of_dim).norm2();
-                }
-                result_tensor
+                sub_tensor.norm2()
             }
         }
 
@@ -50,19 +38,30 @@ mod tests {
 
     #[test]
     fn test_euclidean() {
-        let mut t1 = Tensor::<f64>::create_random(vec![10, 30, 10, 3], None);
-        let mut t2 = t1.clone();
+        let t1 = Tensor::<f64>::create_random(vec![300], None);
+        let t2 = t1.clone();
 
-        let result = t1.euclidean(&mut t2);
-        assert!(result[0] == 0.0);
+        let result = t1.euclidean(&t2);
+        assert!(result == 0.0);
     }
 
     #[test]
     fn test_euclidean2() {
-        let mut t1 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(0.0..0.00001));
-        let mut t2 = Tensor::<f32>::create_random(vec![10, 30, 20], Some(10.0..10.00001));
+        let t1 = Tensor::<f32>::create_random(vec![20], Some(0.0..0.00001));
+        let t2 = Tensor::<f32>::create_random(vec![20], Some(10.0..10.00001));
 
-        let result = t2.euclidean(&mut t1);
-        assert!(result[0] != 0.0);
+        let result = t2.euclidean(&t1);
+        assert!(result != 0.0);
     }
+
+    #[test]
+    #[should_panic]
+    fn test_euclidean3() {
+        let t1 = Tensor::<f64>::create_random(vec![10, 30, 10, 3], None);
+        let t2 = t1.clone();
+
+        let result = t1.euclidean(&t2);
+        assert!(result == 0.0);
+    }
+
 }

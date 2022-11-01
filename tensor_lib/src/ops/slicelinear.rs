@@ -1,11 +1,15 @@
 use std::ops::Range;
 
+use rand::{thread_rng, Rng};
+
 use crate::schema::{tensor::Tensor, size::TensorSize};
 
 
 pub trait SliceLinear<T> {
     type Output;
     fn slice_linear(&mut self, slice: Range<usize>) -> Self::Output;
+    fn slice_linear_last(&mut self, index: usize) -> Self::Output;
+    fn slice_linear_random_last(&mut self) -> Self::Output;
 }
 
 impl<T> SliceLinear<T> for Tensor<'_, T> {
@@ -21,4 +25,19 @@ impl<T> SliceLinear<T> for Tensor<'_, T> {
         }
         Self::create_with_data_copy(data, new_size)
     }
+
+    fn slice_linear_last(&mut self, index: usize) -> Self::Output{
+        let len_of_dim = self.size[self.dim()-1];
+        let range = index*len_of_dim..(index+1)*len_of_dim;
+        self.slice_linear(range)
+    }
+
+    fn slice_linear_random_last(&mut self) -> Self::Output{
+        let mut size = self.size().clone();
+        size.remove_dim(self.dim()-1);
+
+        let random_num = thread_rng().gen_range(0..size.total_elements());
+        self.slice_linear_last(random_num)
+    }
+
 }
