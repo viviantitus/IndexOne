@@ -56,8 +56,16 @@ impl TensorSize{
         return self.data.len();
     }
 
-    pub fn remove_dim(&mut self, dim_index: usize){
-        self.data.remove(dim_index);
+    pub fn remove_dim(&mut self, dim_index: usize) -> TensorSize{
+        let mut new_data = self.data.clone();
+        new_data.remove(dim_index);
+        Self::new(new_data)
+    }
+
+    pub fn push_front(&mut self, val: usize) -> TensorSize{
+        let mut data = self.data.clone();
+        data.insert(0, val);
+        Self::new(data)
     }
 
     fn assert_index(&self, index: &Vec<Indexer>){

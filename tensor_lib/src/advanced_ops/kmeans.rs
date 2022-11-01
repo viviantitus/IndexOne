@@ -1,43 +1,53 @@
-use crate::{schema::tensor::Tensor, ops::slicelinear::SliceLinear};
-use crate::ops::euclidean::Euclidean;
+// use crate::{schema::tensor::Tensor, ops::slicelinear::SliceLinear};
+// use crate::ops::convert::Convert;
+// use crate::ops::stack::Stack;
+// use super::euclidean::Euclidean;
 
 
 
-pub trait KMeans<T> {
-    type Output;
-    fn compute_distance(&mut self, samples: Self) -> Vec<T>;
-    fn train(&mut self, num_centorids: i32, num_iter: i32) -> &Self::Output;
-}
+// pub trait KMeans {
+//     type Output;
+//     fn compute_distance(&mut self, query: &Self) -> Tensor<'_, Self::Output>;
+//     fn train(dataset: &mut Self, num_centorids: i32, num_iter: i32) -> Tensor<'_, Self::Output>;
+// }
 
-macro_rules! kmeans_impl {
-    ($($t:ty)*) => ($(
+// macro_rules! kmeans_impl {
+//     ($($t:ty)*) => ($(
 
-        impl<'a> KMeans<$t> for Tensor<'a, $t> {
-            type Output = Self;
+//         impl KMeans for Tensor<'_, $t> {
+//             type Output = $t;
 
-            fn compute_distance(&mut self, sample: Tensor<'a, $t>) -> Vec<$t>{
-                let mut distances = vec![];
-                for i in 0..self.size[0]{
-                    let distance = sample.euclidean(&self.slice_linear_last(i));
-                    distances.push(distance);
-                }
-                distances
-            }
+//             fn compute_distance(&mut self, query: &Self) -> Tensor<'_, Self::Output> {
+//                 let mut distances = Tensor::new(vec![self.size[0]]);
+//                 for i in 0..self.size[0]{
+//                     distances[i] = query.euclidean(&self.slice_linear_last(i));
+//                 }
+//                 distances
+//             }
 
-            fn train(&mut self, num_centorids: i32, num_iter: i32) -> &Self::Output {
-                assert!(self.dim() == 2);
+//             fn train(dataset: &mut Self, num_centorids: i32, num_iter: i32) -> Tensor<'_, Self::Output> {
+//                 assert!(dataset.dim() == 2);
 
-                for _ in 0..num_centorids{
-                    let rand_sample = self.slice_linear_random_last();
-                    self.compute_distance(rand_sample);
-                }
+//                 let mut queries: Vec<Tensor<$t>> = vec![];
 
-                self
-            }
-        }
+//                 for _ in 0..num_centorids{
+//                     queries.push(dataset.slice_linear_random_last());
+//                 }
 
-    )*)
-}
+//                 queries.stack()
+
+//                 // centroid_distances.push(dataset.compute_distance(&query));
+
+//                 // // let query = dataset.slice_linear_random_last();
+
+//                 // let a= centroid_distances.stack();
+//                 // a
+
+//             }
+//         }
+
+//     )*)
+// }
 
 
-kmeans_impl! { f32 f64 }
+// kmeans_impl! { f32 f64 }

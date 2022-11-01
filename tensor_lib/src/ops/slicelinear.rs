@@ -33,8 +33,7 @@ impl<T> SliceLinear<T> for Tensor<'_, T> {
     }
 
     fn slice_linear_random_last(&mut self) -> Self::Output{
-        let mut size = self.size().clone();
-        size.remove_dim(self.dim()-1);
+        let size = self.size.remove_dim(self.dim()-1);
 
         let random_num = thread_rng().gen_range(0..size.total_elements());
         self.slice_linear_last(random_num)
