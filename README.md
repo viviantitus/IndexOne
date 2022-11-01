@@ -1,4 +1,4 @@
-# IndexOne 3
+# IndexOne
 Vector Database
 
 
