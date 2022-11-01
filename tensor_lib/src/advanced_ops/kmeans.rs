@@ -25,13 +25,14 @@ macro_rules! kmeans_impl {
             fn train<'a>(dataset: &mut Tensor<'a, $t>, num_centorids: i32, num_iter: i32) -> Tensor<'a, $t>{
                 assert!(dataset.dim() == 2);
             
-                let mut queries = vec![];
+                let mut distances = vec![];
             
                 for _ in 0..num_centorids{
-                    queries.push(dataset.slice_linear_random_last());
+                    let query = dataset.slice_linear_random_last();
+                    distances.push(Self::compute_distance(dataset, &query));
                 }
             
-                Vec::convert_to_tensor(queries)
+                distances.convert_to_tensor()
             }
         }
 
