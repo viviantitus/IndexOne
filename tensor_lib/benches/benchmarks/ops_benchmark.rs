@@ -7,11 +7,11 @@ use criterion::{
 
 fn subtract_benchmark(c: &mut Criterion) {
     let t1 = black_box(
-        Tensor::<f32>::create_random(vec![1000], None)
+        Tensor::<f32>::create_random(vec![100], None)
     );
 
     let t2 = black_box(
-        Tensor::<f32>::create_random(vec![1000], None)
+        Tensor::<f32>::create_random(vec![100], None)
     );
 
 

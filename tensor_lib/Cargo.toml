@@ -12,7 +12,7 @@ rand = "0.8.5"
 openblas-src = "0.10.5"
 
 [dev-dependencies]
-criterion = "0.4"
+criterion = "0.3.6"
 
 [[bench]]
 name = "tensor_lib"
