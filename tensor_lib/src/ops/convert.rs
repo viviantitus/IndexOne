@@ -29,10 +29,33 @@ macro_rules! convert_impl {
                 Tensor::create_with_data_copy(new_data, new_size)
             }
         }
+
+        impl<'a> Convert<'a> for Vec<$t> {
+            type Output = $t;
+
+            fn convert_to_tensor(self) -> Tensor<'a, $t>{
+                assert!(self.len() >= 1);
+                
+                let tensor = Tensor::new(vec![self.len()]);
+                tensor.data.copy_from_slice(self.as_slice());
+                tensor
+            }
+        }
+
+        impl<'a> Convert<'a> for $t {
+            type Output = $t;
+
+            fn convert_to_tensor(self) -> Tensor<'a, $t>{
+                
+                let tensor = Tensor::new(vec![1]);
+                tensor.data.copy_from_slice(&[self]);
+                tensor
+            }
+        }
     )*)
 }
 
-convert_impl! { f32 f64 }
+convert_impl! { i32 i64 f32 f64 usize}
 
 
 

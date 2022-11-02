@@ -17,7 +17,7 @@ impl Norm<f32> for Tensor<'_, f32> {
     fn norm(&mut self) -> f32
     { 
         if self.dim() != 1{
-            panic!("Euclidean: Dimensions of tensor should be one");
+            panic!("Norm: Dimensions of tensor should be one");
         }
 
         unsafe {
@@ -37,7 +37,7 @@ impl Norm<f64> for Tensor<'_, f64> {
     fn norm(&mut self) -> f64
     { 
         if self.dim() != 1{
-            panic!("Euclidean: Dimensions of tensor should be one");
+            panic!("Norm: Dimensions of tensor should be one");
         }
         
         unsafe {
@@ -67,7 +67,6 @@ mod blas_tests {
         let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
 
         let result: f32 = tensor.norm();
-        println!("{}", result);
         assert!(result==50.0)
     }
 

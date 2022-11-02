@@ -67,7 +67,6 @@ mod blas_tests {
         let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
 
         let result: f32 = tensor.norm2();
-        println!("{}", result);
         assert!(result==22.36068)
     }
 
