@@ -55,7 +55,7 @@ macro_rules! convert_impl {
     )*)
 }
 
-convert_impl! { i32 i64 f32 f64 usize}
+convert_impl! { i32 i64 f32 f64 usize bool}
 
 
 
