@@ -52,19 +52,19 @@ kmeans_impl! { f32 f64 }
 
 
 
-#[cfg(test)]
-mod tests {
-    use crate::schema::size::TensorSize;
+// #[cfg(test)]
+// mod tests {
+//     use crate::schema::size::TensorSize;
 
-    use super::*;
+//     use super::*;
 
-    #[test]
-    fn test_variance() {
-        let mut data = [10.0, 2.0, 0.0, 1.0, 10.0];
-        let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
+//     #[test]
+//     fn test_variance() {
+//         let mut data = [10.0, 2.0, 0.0, 1.0, 10.0];
+//         let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
 
-        let result = Tensor::train(&mut samples, 3, 3);
-        assert!(1==0)
-    }
+//         let result = Tensor::train(&mut samples, 3, 3);
+//         assert!(1==0)
+//     }
 
-}
+// }
