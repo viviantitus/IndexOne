@@ -17,7 +17,6 @@ impl<'a, T> Flatten<'a, T> for Tensor<'a, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{schema::{size::TensorSize, tensor}};
 
     #[test]
     fn test_flatten() {

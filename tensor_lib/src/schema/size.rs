@@ -87,6 +87,7 @@ impl TensorSize{
         }
     }
 
+    // #TODO: Save this data for faster access
     pub fn total_elements(&self) -> usize{
         let mut size_of_ndarray: usize = 1;
         for i in 0..self.data.len(){
