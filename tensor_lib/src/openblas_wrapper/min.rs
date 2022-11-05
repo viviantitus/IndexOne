@@ -115,11 +115,10 @@ mod blas_tests {
 
     #[test]
     fn smin_dim1() {
-        let mut data = [8.0, 10.0, 3.0, 1.0, 10.0, 5.0];
+        let mut data = [8.0, 10.0, 3.0, 1.0, 9.0, 2.0];
         let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
 
         let result = tensor.min(Some(1));
-        println!("{:?}", result);
-        assert!(result[0]==0 && result[1] == 1 && result[2] == 1)
+        assert!(result[0]==1 && result[1] == 1 && result[2] == 1)
     }
 }
