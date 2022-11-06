@@ -43,11 +43,9 @@ impl<T> SliceLinear<T> for Tensor<'_, T> {
 
     fn slice_linear_random_last_with_ignore(&mut self, ignore: &mut Vec<usize>) -> Self::Output{
         let size = self.size.remove_dim(self.dim()-1);
-
-        let random_num = thread_rng().gen_range(0..size.total_elements());
-
         let output: Self;
         loop {
+            let random_num = thread_rng().gen_range(0..size.total_elements());
             if !ignore.contains(&random_num){
                 ignore.push(random_num);
                 output = self.slice_linear_last(random_num);

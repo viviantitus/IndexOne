@@ -33,11 +33,11 @@ macro_rules! kmeans_impl {
                     let query = self.slice_linear_random_last_with_ignore(&mut ignore);
                     distances.push(query.compute_distance(self));
                 }
-            
+                
                 let mut assignments  = distances.convert_to_tensor();
                 let min_indices= &mut assignments.min(Some(1));
                 
-                println!("{:?}", min_indices);
+                println!("min indices {:?}", min_indices);
 
                 
                 Tensor::new(vec![2])
@@ -60,11 +60,11 @@ mod tests {
 
     #[test]
     fn test_variance() {
-        let mut data = [10.0, 2.0, 0.0, 1.0, 10.0];
+        let mut data = [10.0, 2.0, 0.0, 1.0, 10.1];
         let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
 
         let result = Tensor::train(&mut samples, 3, 3);
-        assert!(0==0)
+        assert!(1==0)
     }
 
 }

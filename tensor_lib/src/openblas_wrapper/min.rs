@@ -40,7 +40,6 @@ macro_rules! min_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[1]{
-                                println!("{} {} {}", self.size[0], size_of_slice, i);
                                 min_values.push(Self::min_blas(self.data, self.size[0], size_of_slice, i));
                             }
                             min_values.convert_to_tensor()
