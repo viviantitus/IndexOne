@@ -2,11 +2,14 @@ use crate::schema::tensor::Tensor;
 use crate::ops::subtract::Subtract;
 use crate::openblas_wrapper::norm2::Norm2;
 use crate::ops::slicelinear::SliceLinear;
+use crate::ops::assign::Assign;
 
 
 pub trait Variance<T, Rhs=Self> {
     type Output;
+    type Assignments;
     fn variance(&self, samples: &mut Rhs) -> T;
+    fn variance_with_assignments(&mut self, samples: &mut Rhs, assignments: Self::Assignments) -> Self;
 }
 
 macro_rules! variance_impl {
@@ -14,6 +17,7 @@ macro_rules! variance_impl {
 
         impl<'a> Variance<$t> for Tensor<'a, $t> {
             type Output = Tensor<'a, $t>;
+            type Assignments = Tensor<'a, usize>;
 
             fn variance(&self, samples: &mut Tensor<'_, $t>) -> $t {
                 if self.dim() != 1{
@@ -28,6 +32,23 @@ macro_rules! variance_impl {
                 for i in 0..samples.size[0]{
                     let mut sub_tensor = self.sub(&samples.slice_linear_last(i));
                     variance += sub_tensor.norm2();
+                }
+                variance
+            }
+
+            fn variance_with_assignments(&mut self, samples: &mut Tensor<'_, $t>, assignments: Self::Assignments) -> Self {
+                if self.dim() > 2{
+                    panic!("Variance: Mean dimension is more than one");
+                }
+                if samples.dim() != 2{
+                    panic!("Variance: Samples dimension is not eq to 2");
+                }
+                assert!(self.size[self.dim()-1] == samples.size[samples.dim()-1]);
+
+                let mut variance: Tensor<'_, $t> = Tensor::<$t>::create_zeros(vec![self.size[0]]);
+                for i in 0..samples.size[0]{
+                    let mut sub_tensor = self.slice_linear_last(assignments[i]).sub(&samples.slice_linear_last(i));
+                    variance[assignments[i]] += sub_tensor.norm2();
                 }
                 variance
             }

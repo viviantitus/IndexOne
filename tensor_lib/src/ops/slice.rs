@@ -1,4 +1,3 @@
-use crate::schema::tensor;
 use crate::schema::{tensor::Tensor, index::Indexer};
 use crate::ops::memalloc::MemAlloc;
 

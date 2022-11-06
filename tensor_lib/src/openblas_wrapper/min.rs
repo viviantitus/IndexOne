@@ -11,15 +11,15 @@ extern "C" {
     pub fn idamin_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> size_t;
 }
 
-pub trait Min<T>{
-    fn min(&mut self, dim: Option<usize>) -> Tensor<'_, usize>;
+pub trait Min<'a, T>{
+    fn min(self, dim: Option<usize>) -> Tensor<'a, usize>;
     fn min_blas(array: &mut [T], n: usize, incx: usize, offset: usize) -> usize;
 }
 
 macro_rules! min_impl {
     ( $( $t:ty ),* ; $( $j:ident ),* ) => ($(
-        impl Min<$t> for Tensor<'_, $t> {
-            fn min(&mut self, dim: Option<usize>) -> Tensor<'_, usize>
+        impl<'a> Min<'a, $t> for Tensor<'a, $t> {
+            fn min(self, dim: Option<usize>) -> Tensor<'a, usize>
             { 
                 if dim.is_some() && dim.unwrap() >= self.dim(){
                     panic!("Min: Dimensions of tensor should be equal");
@@ -81,7 +81,7 @@ mod blas_tests {
     fn smin() {
         let mut data = [8.0, 10.0, 3.0, 1.0, 10.0];
         let data_len = data.len();
-        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
+        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
 
         let result = tensor.min(None);
         assert!(result[0]==3)
@@ -106,7 +106,7 @@ mod blas_tests {
     #[test]
     fn smin_dim0() {
         let mut data = [8.0, 10.0, 3.0, 1.0, 10.0, 5.0];
-        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
+        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
 
         let result = tensor.min(Some(0));
         assert!(result[0]==2 && result[1] == 0)
@@ -115,7 +115,7 @@ mod blas_tests {
     #[test]
     fn smin_dim1() {
         let mut data = [8.0, 10.0, 3.0, 1.0, 9.0, 2.0];
-        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
+        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
 
         let result = tensor.min(Some(1));
         assert!(result[0]==1 && result[1] == 1 && result[2] == 1)
