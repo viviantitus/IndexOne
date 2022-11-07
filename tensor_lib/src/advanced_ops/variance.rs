@@ -9,7 +9,7 @@ pub trait Variance<T, Rhs=Self> {
     type Output;
     type Assignments;
     fn variance(&self, samples: &mut Rhs) -> T;
-    fn variance_with_assignments(&mut self, samples: &mut Rhs, assignments: Self::Assignments) -> Self;
+    fn variance_with_assignments(&mut self, samples: &mut Rhs, assignments: &Self::Assignments) -> Self;
 }
 
 macro_rules! variance_impl {
@@ -36,7 +36,7 @@ macro_rules! variance_impl {
                 variance
             }
 
-            fn variance_with_assignments(&mut self, samples: &mut Tensor<'_, $t>, assignments: Self::Assignments) -> Self {
+            fn variance_with_assignments(&mut self, samples: &mut Tensor<'_, $t>, assignments: &Self::Assignments) -> Self {
                 if self.dim() > 2{
                     panic!("Variance: Mean dimension is more than one");
                 }

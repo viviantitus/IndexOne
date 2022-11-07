@@ -3,6 +3,8 @@ use crate::ops::convert::Convert;
 use super::euclidean::Euclidean;
 use super::variance::Variance;
 use crate::openblas_wrapper::min::Min;
+use crate::advanced_ops::mean::Mean;
+
 
 pub trait KMeans<'a>{
     type Output;
@@ -26,24 +28,28 @@ macro_rules! kmeans_impl {
 
             fn train(&mut self, num_centorids: usize, num_iter: usize) -> Tensor<'a, $t>{
                 assert!(self.dim() == 2);
-            
-                let mut centroids = vec![];
-                let mut distances = vec![];
+                
+                for _ in 0..num_iter{
+                    let mut centroids = vec![];
+                    let mut distances = vec![];
 
-                let mut ignore = vec![];
-                for i in 0..num_centorids{
-                    centroids.push(self.slice_linear_random_last_with_ignore(&mut ignore));
-                    distances.push(centroids[i].compute_distance(self));
+                    let mut ignore = vec![];
+                    for i in 0..num_centorids{
+                        centroids.push(self.slice_linear_random_last_with_ignore(&mut ignore));
+                        distances.push(centroids[i].compute_distance(self));
+                    }
+                    
+                    let distance_tensor  = distances.convert_to_tensor();
+                    let assignments = distance_tensor.min(Some(1));
+                    
+                    let mut centroid_tensor = centroids.convert_to_tensor();
+                    let _ = centroid_tensor.variance_with_assignments(self, &assignments);
+
+                    // TODO: variance comparison
+
+                    _ = self.mean_with_assignments(&assignments);
                 }
-                
-                let distance_tensor  = distances.convert_to_tensor();
-                let assignments = distance_tensor.min(Some(1));
-                
-                let mut centroid_tensor = centroids.convert_to_tensor();
-                let variances = centroid_tensor.variance_with_assignments(self, assignments);
-                println!("variances {:?}", variances);
-
-                
+                                
                 Tensor::new(vec![2])
             }
         }
@@ -63,7 +69,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_variance() {
+    fn test_kmeans() {
         let mut data = [10.0, 2.0, 0.0, 1.0, 10.1];
         let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
 

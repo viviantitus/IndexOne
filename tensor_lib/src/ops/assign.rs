@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crate::schema::size::TensorSize;
 use crate::schema::tensor::Tensor;
 

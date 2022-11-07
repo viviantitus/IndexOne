@@ -7,3 +7,4 @@ pub mod convert;
 pub mod equals;
 pub mod flatten;
 pub mod random;
+pub mod divide;

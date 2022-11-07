@@ -2,6 +2,7 @@ use std::ops::Index;
 
 use super::index::Indexer;
 
+
 #[derive(Debug, Clone)]
 pub struct TensorSize{
     data: Vec<usize>,
@@ -23,7 +24,7 @@ impl TensorSize{
         TensorSize { data: data, cumulative: cumulative }    
     }
 
-    pub fn create_slicevec(&self, slice: &Indexer, dim: usize) -> Vec<Indexer>{
+    pub fn create_slicevec<'a>(&self, slice: &'a Indexer, dim: usize) -> Vec<Indexer<'a>>{
         let mut slice_vec : Vec<Indexer> = vec![];
         for i in 0..self.data.len(){
             slice_vec.push(if dim == i {slice.clone()} else {Indexer::RangeFull(..)});
@@ -37,7 +38,8 @@ impl TensorSize{
             Indexer::Range(x) => x.end - x.start,
             Indexer::RangeFrom(x) => self[dim] - x.start,
             Indexer::RangeTo(x) => x.end,
-            Indexer::RangeFull(_) => self[dim]
+            Indexer::RangeFull(_) => self[dim],
+            Indexer::BoolArray(x) => {let mut count = 0; for i in 0..x.data.len() {if x[i] {count += 1}} count}
         }
     }
 
@@ -79,7 +81,8 @@ impl TensorSize{
                 Indexer::Range(x) => x.start >= self.data[i] || x.end > self.data[i] || x.end <= x.start,
                 Indexer::RangeFrom(x) => x.start >= self.data[i],
                 Indexer::RangeTo(x) => x.end > self.data[i],
-                Indexer::RangeFull(_) => false
+                Indexer::RangeFull(_) => false,
+                Indexer::BoolArray(_) => false
             };
             if assert_index{
                 panic!("Index of Dim {} out of bounds", i)
@@ -114,7 +117,8 @@ impl TensorSize{
                 Indexer::Range(_) => panic!("Cannot implement sequence calculation for slices"),
                 Indexer::RangeFrom(_) => panic!("Cannot implement sequence calculation for slices"),
                 Indexer::RangeTo(_) => panic!("Cannot implement sequence calculation for slices"),
-                Indexer::RangeFull(_) => panic!("Cannot implement sequence calculation for slices")
+                Indexer::RangeFull(_) => panic!("Cannot implement sequence calculation for slices"),
+                Indexer::BoolArray(_) => panic!("Cannot implement sequence calculation for slices")
             }
             
         }
@@ -137,7 +141,8 @@ impl TensorSize{
                 Indexer::Range(x) => dim_index >= x.start && dim_index < x.end,
                 Indexer::RangeFrom(x) => dim_index >= x.start,
                 Indexer::RangeTo(x) => dim_index < x.end,
-                Indexer::RangeFull(_) => true
+                Indexer::RangeFull(_) => true,
+                Indexer::BoolArray(x) => x.data[dim_index]
             };
             if !cond{
                 return false;
@@ -168,6 +173,7 @@ impl PartialEq for TensorSize{
 
 #[cfg(test)]
 mod size_tests {
+    use crate::ops::convert::Convert;
     use crate::schema::size::TensorSize;
     use crate::t;
 
@@ -183,5 +189,12 @@ mod size_tests {
     fn test_assert_index() {
         let size = TensorSize::new(vec![5, 10, 2, 5]);
         size.is_seqindex_within_slice(t![3, 3, 1, 6], 339);
+    }
+
+    #[test]
+    fn test_bool_array() {
+        let size = TensorSize::new(vec![5, 10, 2, 5]);
+        let cond = size.is_seqindex_within_slice(t![vec![false, false, false, true, false].convert_to_tensor(), 3, 1, 4], 339);
+        assert!(cond);
     }
 }
