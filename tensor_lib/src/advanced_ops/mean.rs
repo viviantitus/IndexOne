@@ -10,7 +10,7 @@ use crate::schema::index::Indexer;
 pub trait Mean<T, Rhs=Self> {
     type Assignments;
     fn mean(&mut self) -> Self;
-    fn mean_with_assignments(&mut self, assignments: &Self::Assignments) -> Self;
+    fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centroids: usize) -> Self;
 }
 
 macro_rules! mean_impl {
@@ -28,7 +28,7 @@ macro_rules! mean_impl {
                 normed_tensor.div(self.size[0] as $t)
             }
 
-            fn mean_with_assignments(&mut self, assignments: &Self::Assignments) -> Self{
+            fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centroids: usize) -> Self{
                 if self.dim() != 2{
                     panic!("Mean: Samples dimension is not eq to 2");
                 }
@@ -36,7 +36,7 @@ macro_rules! mean_impl {
                 //mean for last dimension
 
                 let mut mean: Tensor<'_, $t> = Tensor::<$t>::create_zeros(vec![self.size[1]]);
-                for i in 0..self.size[0]{
+                for i in 0..num_centroids{
                     let mut slice = self.slice_at(Indexer::BoolArray(assignments.equals(i)), 0);
                     mean = slice.norm(Some(1)).div(self.size[0] as $t);
                 } 

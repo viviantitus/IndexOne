@@ -47,7 +47,7 @@ macro_rules! kmeans_impl {
 
                     // TODO: variance comparison
 
-                    _ = self.mean_with_assignments(&assignments);
+                    _ = self.mean_with_assignments(&assignments, num_centorids);
                 }
                                 
                 Tensor::new(vec![2])
@@ -73,7 +73,7 @@ mod tests {
         let mut data = [10.0, 2.0, 0.0, 1.0, 10.1];
         let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
 
-        let _ = Tensor::train(&mut samples, 3, 3);
+        let _ = Tensor::train(&mut samples, 3, 1);
         assert!(0==0)
     }
 
