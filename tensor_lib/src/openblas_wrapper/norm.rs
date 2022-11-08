@@ -11,49 +11,6 @@ extern "C" {
     pub fn dasum_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> c_double;
 }
 
-// pub trait Norm<T>{
-//     fn norm(&mut self) -> T;
-// }
-
-// impl Norm<f32> for Tensor<'_, f32> {
-//     fn norm(&mut self) -> f32
-//     { 
-//         if self.dim() != 1{
-//             panic!("Norm: Dimensions of tensor should be one");
-//         }
-
-//         unsafe {
-//             let mut n: i32 = i32::try_from(self.data.len()).unwrap();
-//             let mut incx: i32 = 1;
-//             let ret = sasum_(
-//                 &mut n as *mut _,
-//                 self.data.as_mut_ptr(),
-//                 &mut incx as *mut _,
-//             );
-//             ret
-//         }
-//     }
-// }
-
-// impl Norm<f64> for Tensor<'_, f64> {
-//     fn norm(&mut self) -> f64
-//     { 
-//         if self.dim() != 1{
-//             panic!("Norm: Dimensions of tensor should be one");
-//         }
-        
-//         unsafe {
-//             let mut n: i32 = i32::try_from(self.data.len()).unwrap();
-//             let mut incx: i32 = 1;
-//             let ret = dasum_(
-//                 &mut n as *mut _,
-//                 self.data.as_mut_ptr(),
-//                 &mut incx as *mut _,
-//             );
-//             ret
-//         }
-//     }
-// }
 
 pub trait Norm<'a, T>{
     fn norm(&mut self, dim: Option<usize>) -> Self;

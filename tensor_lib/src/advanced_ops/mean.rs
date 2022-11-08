@@ -1,9 +1,9 @@
 use crate::schema::tensor::Tensor;
 use crate::openblas_wrapper::norm::Norm;
-use crate::ops::assign::Assign;
 use crate::ops::equals::Equals;
 use crate::ops::divide::Divide;
 use crate::ops::slice::Slice;
+use crate::ops::convert::Convert;
 use crate::schema::index::Indexer;
 
 
@@ -32,15 +32,21 @@ macro_rules! mean_impl {
                 if self.dim() != 2{
                     panic!("Mean: Samples dimension is not eq to 2");
                 }
+                if assignments.data.len() != self.size[0]{
+                    panic!("Mean: Assignments not equal tot samples size");
+                }
                 
                 //mean for last dimension
 
-                let mut mean: Tensor<'_, $t> = Tensor::<$t>::create_zeros(vec![self.size[1]]);
+                let mut mean_tensor = vec![];
                 for i in 0..num_centroids{
-                    let mut slice = self.slice_at(Indexer::BoolArray(assignments.equals(i)), 0);
-                    mean = slice.norm(Some(1)).div(self.size[0] as $t);
+                    let bool_tensor = assignments.equals(i);
+
+                    let mut slice = self.slice_at(Indexer::BoolArray(bool_tensor), 0);
+                    let mean = slice.norm(Some(1)).div(slice.size[0] as $t);
+                    mean_tensor.push(mean);
                 } 
-                mean
+                mean_tensor.convert_to_tensor()
             }
         }
 
@@ -64,6 +70,18 @@ mod tests {
 
         let result = samples.mean();
         assert!(result[0]==3.0)
+    }
+
+    #[test]
+    fn test_mean_with_assignments() {
+        let mut data = [1.0, 2.0, 3.0, 4.0, 5.0, 2.0, 4.0, 6.0, 8.0, 10.0, 3.0, 6.0, 9.0, 12.0, 15.0, 2.0, 4.0, 6.0, 8.0, 10.0];
+        let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![4, 5]));
+
+        let mut assign_data: [usize; 4] = [0, 1, 2, 2];
+        let assignments = Tensor::create_with_data_copy(assign_data.as_mut_slice(), TensorSize::new(vec![4]));
+
+        let result = samples.mean_with_assignments(&assignments, 3);
+        assert!(result[10]==2.5 && result[11]==5.0 && result[12]==7.5)
     }
 
 }
