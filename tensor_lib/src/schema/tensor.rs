@@ -38,7 +38,7 @@ impl<'a, T> Tensor<'a, T>{
     }
 }
 
-impl<'a, T> Index<Vec<Indexer>> for Tensor<'a, T> {
+impl<'a, T> Index<Vec<Indexer<'a>>> for Tensor<'a, T> {
     type Output = T;
     fn index(&self, index: Vec<Indexer>) -> &Self::Output {
         let data_index = self.size.calc_seq_index(index);

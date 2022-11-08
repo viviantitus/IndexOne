@@ -2,13 +2,14 @@ use crate::schema::{tensor::Tensor, index::Indexer};
 use crate::ops::memalloc::MemAlloc;
 
 
-pub trait Slice<T: Copy> {
+pub trait Slice<'a, T: Copy> {
     type Output;
     fn slice(&mut self, slice_vec: Vec<Indexer>) -> Self::Output;
     fn slice_at(&mut self, slice: Indexer, dim: usize) -> Self::Output;
+    // fn gather(&mut self, array: Tensor<'a, bool>) -> Self::Output;
 }
 
-impl<T: Copy> Slice<T> for Tensor<'_, T> {
+impl<'a, T: Copy> Slice<'a, T> for Tensor<'a, T> {
     type Output = Self;
 
     fn slice(&mut self, slice_vec: Vec<Indexer>) -> Self::Output{
@@ -42,6 +43,17 @@ impl<T: Copy> Slice<T> for Tensor<'_, T> {
 
         Self::create_with_data_copy(data, new_size)
     }
+
+    // fn gather(&mut self, array: Tensor<'a, bool>) -> Self::Output{
+    //     assert!(self.size.total_elements() == array.size.total_elements());
+    //     let tensor = Tensor::<T>::create_with_tensorsize(self.size.clone());
+    //     for indx_ in 0..self.size.total_elements(){
+    //         if array[indx_]{
+    //             tensor.data[indx_] = self.data[indx_];
+    //         }
+    //     }
+    //     tensor
+    // }
 }
 
 #[cfg(test)]
@@ -76,4 +88,11 @@ mod tests {
         let mut tensor1 = Tensor::<f32>::new(vec![500, 30, 10]);
         let _sliced_tensor = tensor1.slice(t![500.., ..30, ..]);
     }
+
+    // #[test]
+    // fn test_gather() {
+    //     let mut tensor1 = Tensor::<f32>::new(vec![5]);
+    //     let sliced_tensor = tensor1.gather(vec![true, false, true, false, false].convert_to_tensor());
+    //     assert!(sliced_tensor.size() == &TensorSize::new(vec![1, 25, 1]));
+    // }
 }

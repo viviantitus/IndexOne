@@ -16,6 +16,10 @@ pub trait Norm2<T>{
 impl Norm2<f32> for Tensor<'_, f32> {
     fn norm2(&mut self) -> f32
     { 
+        if self.dim() != 1{
+            panic!("Euclidean: Dimensions of tensor should be one");
+        }
+
         unsafe {
             let mut n: i32 = i32::try_from(self.data.len()).unwrap();
             let mut incx: i32 = 1;
@@ -32,6 +36,10 @@ impl Norm2<f32> for Tensor<'_, f32> {
 impl Norm2<f64> for Tensor<'_, f64> {
     fn norm2(&mut self) -> f64
     { 
+        if self.dim() != 1{
+            panic!("Euclidean: Dimensions of tensor should be one");
+        }
+        
         unsafe {
             let mut n: i32 = i32::try_from(self.data.len()).unwrap();
             let mut incx: i32 = 1;
@@ -59,7 +67,6 @@ mod blas_tests {
         let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
 
         let result: f32 = tensor.norm2();
-        println!("{}", result);
         assert!(result==22.36068)
     }
 
