@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "app",
+    "tensor_lib",
+]
