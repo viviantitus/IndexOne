@@ -1,5 +1,5 @@
 [package]
-name = "tensor_lib"
+name = "tensorlib"
 version = "0.1.0"
 edition = "2021"
 
@@ -15,7 +15,7 @@ openblas-src = "0.10.5"
 criterion = "0.3.6"
 
 [[bench]]
-name = "tensor_lib"
+name = "tensorlib"
 harness = false
 
 [profile.dev]

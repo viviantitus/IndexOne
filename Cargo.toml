@@ -2,5 +2,5 @@
 
 members = [
     "app",
-    "tensor_lib",
+    "tensorlib",
 ]

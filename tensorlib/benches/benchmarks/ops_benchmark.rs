@@ -1,4 +1,4 @@
-use tensor_lib::{schema::tensor::Tensor, ops::{random::Random, subtract::Subtract}};
+use tensorlib::{schema::tensor::Tensor, ops::{random::Random, subtract::Subtract}};
 use criterion::{
     black_box,
     criterion_group,

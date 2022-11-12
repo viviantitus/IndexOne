@@ -19,3 +19,4 @@ dot_product                   17.22s
 
 
 Total time taken to compute kmeans is 69 seconds for 10000 vectors of dimension 512
+Optimised version of rust takes 469ms which is 14612% increase

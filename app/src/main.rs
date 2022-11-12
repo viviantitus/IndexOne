@@ -1,4 +1,4 @@
-use tensor_lib::{schema::tensor::Tensor, advanced_ops::kmeans::KMeans};
+use tensorlib::{schema::tensor::Tensor, advanced_ops::kmeans::KMeans};
 use std::time::Instant;
 
 fn main() {
