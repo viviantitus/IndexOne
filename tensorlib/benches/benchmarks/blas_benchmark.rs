@@ -1,4 +1,4 @@
-use tensor_lib::{openblas_wrapper::norm2::Norm2, schema::tensor::Tensor, ops::{random::Random}};
+use tensorlib::{openblas_wrapper::norm2::Norm2, schema::tensor::Tensor, ops::{random::Random}};
 use criterion::{
     black_box,
     criterion_group,
