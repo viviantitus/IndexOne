@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 tensorlib = { path = "../tensorlib" }
+gnuplot = "0.0.37"
