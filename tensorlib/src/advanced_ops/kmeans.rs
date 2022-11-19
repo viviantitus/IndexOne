@@ -8,8 +8,9 @@ use crate::advanced_ops::mean::Mean;
 
 pub trait KMeans<'a>{
     type Output;
+    fn absolute(num: Self::Output) -> Self::Output;
     fn compute_distance(&self, dataset: &mut Tensor<'a, Self::Output>) -> Tensor<'a, Self::Output>;
-    fn train(&'a mut self, num_centorids: usize, num_iter: usize) -> (Self::Output, Tensor<'a, Self::Output>, Tensor<'a, usize>);
+    fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> (Self::Output, Tensor<'a, Self::Output>, Tensor<'a, usize>);
 }
 
 macro_rules! kmeans_impl {
@@ -17,6 +18,15 @@ macro_rules! kmeans_impl {
 
         impl<'a> KMeans<'a> for Tensor<'_, $t> {
             type Output = $t;
+
+            fn absolute(num: $t) -> $t{
+                if num > 0.0{
+                    return num;
+                }
+                else{
+                    return -num;
+                }
+            }
 
             fn compute_distance(&self, dataset: &mut Tensor<'a, $t>) -> Tensor<'a, $t> {
                 let mut distances = Tensor::new(vec![dataset.size[0]]);
@@ -26,14 +36,14 @@ macro_rules! kmeans_impl {
                 distances
             }
 
-            fn train(&'a mut self, num_centorids: usize, num_iter: usize) -> ($t, Tensor<'a, $t>, Tensor<'a, usize>){
+            fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> ($t, Tensor<'a, $t>, Tensor<'a, usize>){
                 assert!(self.dim() == 2);
                 
                 let mut final_centroids: Tensor<'a, $t> = Tensor::new(vec![num_centorids, self.size[1]]);
                 let mut final_assignments: Tensor<'a, usize> = Tensor::new(vec![self.size[0]]);
                 let mut final_variance = <$t>::MAX;
 
-                for _ in 0..num_iter{
+                for _ in 0..num_init{
                     let mut iter_variance = <$t>::MAX;
 
                     let mut centroids = vec![];
@@ -44,7 +54,9 @@ macro_rules! kmeans_impl {
                     }
                     let mut centroid_tensor  = centroids.convert_to_tensor();
 
+                    let mut loop_iter = 0;
                     loop {
+                        loop_iter += 1;
                         let mut distances = vec![];
 
                         for i in 0..num_centorids{
@@ -55,9 +67,9 @@ macro_rules! kmeans_impl {
                         let assignments = distance_tensor.min(Some(1));
                         
                         let variance = centroid_tensor.variance_with_assignments(self, &assignments);
-    
-                        // TODO: variance comparison
-                        if variance - iter_variance < 0.001{
+                        
+                        //TODO: Bug in Kmeans when making absolute value of variance - iter_variance
+                        if variance - iter_variance < tolerance{
                             if variance < final_variance{
                                 final_variance = variance;
                                 final_centroids = centroid_tensor;
@@ -65,8 +77,12 @@ macro_rules! kmeans_impl {
                             }
                             break;
                         }
-                        iter_variance = variance;
-    
+                        if variance < iter_variance{
+                                iter_variance = variance;
+                        }
+                        if loop_iter >= num_iter{
+                            break;
+                        }
                         centroid_tensor = self.mean_with_assignments(&assignments, num_centorids);
                     }
                 }
@@ -90,11 +106,24 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_absolute(){
+        let num = -3.0;
+        assert!(Tensor::<f32>::absolute(num) == 3.0);
+    }
+
+    #[test]
+    fn test_absolute2(){
+        let num = 3.0;
+        assert!(Tensor::<f32>::absolute(num) == 3.0);
+    }
+
+
+    #[test]
     fn test_kmeans() {
         let mut data = [10.0, 2.0, 0.0, 1.0, 10.1];
         let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
 
-        let _ = Tensor::train(&mut samples, 3, 10);
+        let _ = Tensor::train(&mut samples, 3, 10, 300, 1e-4);
     }
 
 }

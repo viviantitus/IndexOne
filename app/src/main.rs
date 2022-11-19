@@ -53,9 +53,16 @@ macro_rules! t {
 
 fn main() {
 
-
-
     let start = Instant::now();
+
+    let mut first_data =  Tensor::<f32>::create_random(vec![10000, 512], Some(10.0..15.0));
+
+    let _ = first_data.train(3, 10, 300, 1e-4);
+
+    let duration = start.elapsed();
+    println!("Total time taken to run is {:?}", duration);
+
+    // -----------------------------   Test with multiple clusters -----------------------------
 
     let mut dataset = vec![];
     dataset.push(Tensor::<f32>::create_random(vec![20, 2], Some(10.0..15.0)));
@@ -64,10 +71,7 @@ fn main() {
 
     let mut data_tensor = dataset.concat();
 
-    let results = data_tensor.train(3, 100);
-
-    let duration = start.elapsed();
-    println!("Total time taken to run is {:?}", duration);
+    let results = data_tensor.train(3, 10, 300, 1e-4);
 
     println!("{:?}", results.2);
 
