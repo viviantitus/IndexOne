@@ -57,7 +57,7 @@ fn main() {
 
     let mut first_data =  Tensor::<f32>::create_random(vec![10000, 512], Some(10.0..15.0));
 
-    let _ = first_data.train(3, 10, 300, 1e-4);
+    let _ = first_data.train(3, 10, 5, 1e-4);
 
     let duration = start.elapsed();
     println!("Total time taken to run is {:?}", duration);
@@ -71,7 +71,11 @@ fn main() {
 
     let mut data_tensor = dataset.concat();
 
+    let start = Instant::now();
     let results = data_tensor.train(3, 10, 300, 1e-4);
+    let duration = start.elapsed();
+    println!("Total time taken to run is {:?}", duration);
+    
 
     println!("{:?}", results.2);
 

@@ -8,7 +8,6 @@ use crate::advanced_ops::mean::Mean;
 
 pub trait KMeans<'a>{
     type Output;
-    fn absolute(num: Self::Output) -> Self::Output;
     fn compute_distance(&self, dataset: &mut Tensor<'a, Self::Output>) -> Tensor<'a, Self::Output>;
     fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> (Self::Output, Tensor<'a, Self::Output>, Tensor<'a, usize>);
 }
@@ -18,15 +17,6 @@ macro_rules! kmeans_impl {
 
         impl<'a> KMeans<'a> for Tensor<'_, $t> {
             type Output = $t;
-
-            fn absolute(num: $t) -> $t{
-                if num > 0.0{
-                    return num;
-                }
-                else{
-                    return -num;
-                }
-            }
 
             fn compute_distance(&self, dataset: &mut Tensor<'a, $t>) -> Tensor<'a, $t> {
                 let mut distances = Tensor::new(vec![dataset.size[0]]);
@@ -69,7 +59,7 @@ macro_rules! kmeans_impl {
                         let variance = centroid_tensor.variance_with_assignments(self, &assignments);
                         
                         //TODO: Bug in Kmeans when making absolute value of variance - iter_variance
-                        if variance - iter_variance < tolerance{
+                        if variance - iter_variance < tolerance && iter_variance - variance < tolerance{
                             if variance < final_variance{
                                 final_variance = variance;
                                 final_centroids = centroid_tensor;
@@ -104,18 +94,6 @@ mod tests {
     use crate::schema::size::TensorSize;
 
     use super::*;
-
-    #[test]
-    fn test_absolute(){
-        let num = -3.0;
-        assert!(Tensor::<f32>::absolute(num) == 3.0);
-    }
-
-    #[test]
-    fn test_absolute2(){
-        let num = 3.0;
-        assert!(Tensor::<f32>::absolute(num) == 3.0);
-    }
 
 
     #[test]

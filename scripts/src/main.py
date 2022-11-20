@@ -23,7 +23,7 @@ def main():
     from sklearn.cluster import KMeans
     import time
     import numpy as np
-    X = np.random.rand(10000,512)
+    X = np.random.rand(1000000,512).astype(np.float32)
 
     kmeans = KMeans(n_clusters=3, init='random')
     start = time.time()
