@@ -7,8 +7,12 @@ use crate::ops::slicelinear::SliceLinear;
 pub trait Variance<T, Rhs=Self> {
     type Output;
     type Assignments;
+    type Assignmentsu8;
+
     fn variance(&self, samples: &mut Rhs) -> T;
     fn variance_with_assignments(&mut self, samples: &mut Rhs, assignments: &Self::Assignments) -> T;
+    fn variance_with_assignments_for_u8(&mut self, samples: &mut Rhs, assignments: &Self::Assignmentsu8) -> T;
+
 }
 
 macro_rules! variance_impl {
@@ -17,6 +21,8 @@ macro_rules! variance_impl {
         impl<'a> Variance<$t> for Tensor<'a, $t> {
             type Output = Tensor<'a, $t>;
             type Assignments = Tensor<'a, usize>;
+            type Assignmentsu8 = Tensor<'a, u8>;
+
 
             fn variance(&self, samples: &mut Tensor<'_, $t>) -> $t {
                 if self.dim() != 1{
@@ -48,6 +54,26 @@ macro_rules! variance_impl {
                 for i in 0..samples.size[0]{
                     let mut sub_tensor = self.slice_linear_last(assignments[i]).sub(&samples.slice_linear_last(i));
                     variance += sub_tensor.norm2();
+                }
+                variance
+            }
+
+            fn variance_with_assignments_for_u8(&mut self, samples: &mut Tensor<'_, $t>, assignments: &Self::Assignmentsu8) -> $t {
+                if self.dim() > 2{
+                    panic!("Variance: Mean dimension is more than one");
+                }
+                if samples.dim() != 2{
+                    panic!("Variance: Samples dimension is not eq to 2");
+                }
+                assert!(self.size[self.dim()-1] == samples.size[samples.dim()-1]);
+
+                let mut variance = 0.0;
+                for i in 0..samples.size[0]{
+                    let first = self.slice_linear_last(usize::from(assignments[i]));
+                    let second = samples.slice_linear_last(i);
+                    for i in 0..first.size[0]{
+                        variance += (first.data[i] - second.data[i]).powi(2);
+                    }
                 }
                 variance
             }

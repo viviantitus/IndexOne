@@ -7,8 +7,12 @@ use crate::ops::divide::Divide;
 
 pub trait Mean<T, Rhs=Self> {
     type Assignments;
+    type Assignmentsu8;
+    
     fn mean(&mut self) -> Self;
     fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centorids: usize) -> Self;
+    fn mean_with_assignments_for_u8(&mut self, assignments: &Self::Assignmentsu8, num_centorids: usize) -> Self;
+
 }
 
 macro_rules! mean_impl {
@@ -16,6 +20,8 @@ macro_rules! mean_impl {
 
         impl<'a> Mean<$t> for Tensor<'a, $t> {
             type Assignments = Tensor<'a, usize>;
+            type Assignmentsu8 = Tensor<'a, u8>;
+
 
             fn mean(&mut self) -> Self {
                 if self.dim() != 1{
@@ -45,6 +51,37 @@ macro_rules! mean_impl {
                 for dim in 0..self.size[1]{
                     for sample_indx in 0..self.size[0]{
                         ret_tensor[t![assignments[sample_indx], dim]] += self[t![sample_indx, dim]];
+                    }  
+                }
+
+                for centroid_indx in 0..num_centorids{
+                    for dim in 0..self.size[1]{
+                        ret_tensor[t![centroid_indx, dim]] /= assign_count_for_dim[centroid_indx];
+                    }
+                }
+
+                ret_tensor
+            }
+
+            fn mean_with_assignments_for_u8(&mut self, assignments: &Self::Assignmentsu8, num_centorids: usize) -> Self{
+                if self.dim() != 2{
+                    panic!("Mean: Samples dimension is not eq to 2");
+                }
+                if assignments.data.len() != self.size[0]{
+                    panic!("Mean: Assignments not equal tot samples size");
+                }
+                
+                //mean for last dimension
+                let mut assign_count_for_dim: [$t; 3] = [0.0, 0.0, 0.0];
+
+                for i in 0..self.size[0]{
+                    assign_count_for_dim[usize::from(assignments[i])] += 1.0;
+                }
+
+                let mut ret_tensor = Tensor::<$t>::create_zeros(vec![num_centorids, self.size[1]]);
+                for dim in 0..self.size[1]{
+                    for sample_indx in 0..self.size[0]{
+                        ret_tensor[t![usize::from(assignments[sample_indx]), dim]] += self[t![sample_indx, dim]];
                     }  
                 }
 

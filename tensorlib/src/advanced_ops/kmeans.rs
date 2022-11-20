@@ -9,7 +9,7 @@ use crate::advanced_ops::mean::Mean;
 pub trait KMeans<'a>{
     type Output;
     fn compute_distance(&self, dataset: &mut Tensor<'a, Self::Output>) -> Tensor<'a, Self::Output>;
-    fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> (Self::Output, Tensor<'a, Self::Output>, Tensor<'a, usize>);
+    fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> (Self::Output, Tensor<'a, Self::Output>, Tensor<'a, u8>);
 }
 
 macro_rules! kmeans_impl {
@@ -26,11 +26,11 @@ macro_rules! kmeans_impl {
                 distances
             }
 
-            fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> ($t, Tensor<'a, $t>, Tensor<'a, usize>){
+            fn train(&'a mut self, num_centorids: usize, num_init: usize, num_iter: usize, tolerance: Self::Output) -> ($t, Tensor<'a, $t>, Tensor<'a, u8>){
                 assert!(self.dim() == 2);
                 
                 let mut final_centroids: Tensor<'a, $t> = Tensor::new(vec![num_centorids, self.size[1]]);
-                let mut final_assignments: Tensor<'a, usize> = Tensor::new(vec![self.size[0]]);
+                let mut final_assignments: Tensor<'a, u8> = Tensor::new(vec![self.size[0]]);
                 let mut final_variance = <$t>::MAX;
 
                 for _ in 0..num_init{
@@ -54,11 +54,10 @@ macro_rules! kmeans_impl {
                         }
                         
                         let distance_tensor  = distances.convert_to_tensor();
-                        let assignments = distance_tensor.min(Some(1));
+                        let assignments = distance_tensor.min_for_u8(Some(1));
                         
-                        let variance = centroid_tensor.variance_with_assignments(self, &assignments);
+                        let variance = centroid_tensor.variance_with_assignments_for_u8(self, &assignments);
                         
-                        //TODO: Bug in Kmeans when making absolute value of variance - iter_variance
                         if variance - iter_variance < tolerance && iter_variance - variance < tolerance{
                             if variance < final_variance{
                                 final_variance = variance;
@@ -73,7 +72,7 @@ macro_rules! kmeans_impl {
                         if loop_iter >= num_iter{
                             break;
                         }
-                        centroid_tensor = self.mean_with_assignments(&assignments, num_centorids);
+                        centroid_tensor = self.mean_with_assignments_for_u8(&assignments, num_centorids);
                     }
                 }
                                 

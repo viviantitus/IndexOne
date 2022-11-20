@@ -1,6 +1,4 @@
 use crate::schema::tensor::Tensor;
-use crate::ops::subtract::Subtract;
-use crate::openblas_wrapper::norm2::Norm2;
 
 
 pub trait Euclidean<T, Rhs=Self> {
@@ -15,11 +13,14 @@ macro_rules! euclidean_impl {
             type Output = Tensor<'a, $t>;
 
             fn euclidean(&self, other: &Tensor<'_, $t>) -> $t {
-                if self.size() != other.size(){
+                if self.size() != other.size() || self.dim() != 1{
                     panic!("Euclidean: Dimensions do not match");
                 }
-                let mut sub_tensor = self.sub(&other);
-                sub_tensor.norm2()
+                let mut norm: $t = 0.0;
+                for i in 0..self.size[0]{
+                    norm += (self.data[i] - other.data[i]).powi(2);
+                }
+                norm.sqrt()
             }
         }
 
