@@ -58,7 +58,7 @@ macro_rules! kmeans_impl {
                         
                         let variance = centroid_tensor.variance_with_assignments_for_u8(self, &assignments);
                         
-                        if variance - iter_variance < tolerance && iter_variance - variance < tolerance{
+                        if (variance - iter_variance).abs() < tolerance{
                             if variance < final_variance{
                                 final_variance = variance;
                                 final_centroids = centroid_tensor;

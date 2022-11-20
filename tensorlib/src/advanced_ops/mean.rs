@@ -50,8 +50,8 @@ macro_rules! mean_impl {
                     assign_count_for_dim[usize::from(assignments[i])] += 1.0;
                 }
 
-                for dim in 0..self.size[1]{
-                    for sample_indx in 0..self.size[0]{
+                for sample_indx in 0..self.size[0]{
+                    for dim in 0..self.size[1]{
                         centroid_tensor[(usize::from(assignments[sample_indx]) * self.size[1]) + dim] += self[(sample_indx * self.size[1]) + dim];
                     }  
                 }
