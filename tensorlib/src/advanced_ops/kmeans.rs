@@ -72,7 +72,7 @@ macro_rules! kmeans_impl {
                         if loop_iter >= num_iter{
                             break;
                         }
-                        centroid_tensor = self.mean_with_assignments_for_u8(&assignments, num_centorids);
+                        self.mean_with_assignments_for_u8(&assignments, &mut centroid_tensor);
                     }
                 }
                                 

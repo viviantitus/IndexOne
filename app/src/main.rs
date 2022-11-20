@@ -55,7 +55,7 @@ fn main() {
 
     let start = Instant::now();
 
-    let mut first_data =  Tensor::<f32>::create_random(vec![100000, 512], Some(10.0..15.0));
+    let mut first_data =  Tensor::<f32>::create_random(vec![10000, 512], Some(10.0..15.0));
 
     let _ = first_data.train(3, 10, 5, 1e-4);
 
