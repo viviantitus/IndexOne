@@ -1,16 +1,18 @@
 use crate::schema::tensor::Tensor;
 use crate::openblas_wrapper::norm::Norm;
-use crate::ops::equals::Equals;
+use crate::t;
+use crate::ops::assign::Assign;
 use crate::ops::divide::Divide;
-use crate::ops::slice::Slice;
-use crate::ops::convert::Convert;
-use crate::schema::index::Indexer;
 
 
 pub trait Mean<T, Rhs=Self> {
     type Assignments;
+    type Assignmentsu8;
+    
     fn mean(&mut self) -> Self;
-    fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centroids: usize) -> Self;
+    fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centorids: usize) -> Self;
+    fn mean_with_assignments_for_u8(&mut self, assignments: &Self::Assignmentsu8, num_centorids: usize) -> Self;
+
 }
 
 macro_rules! mean_impl {
@@ -18,6 +20,8 @@ macro_rules! mean_impl {
 
         impl<'a> Mean<$t> for Tensor<'a, $t> {
             type Assignments = Tensor<'a, usize>;
+            type Assignmentsu8 = Tensor<'a, u8>;
+
 
             fn mean(&mut self) -> Self {
                 if self.dim() != 1{
@@ -28,7 +32,7 @@ macro_rules! mean_impl {
                 normed_tensor.div(self.size[0] as $t)
             }
 
-            fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centroids: usize) -> Self{
+            fn mean_with_assignments(&mut self, assignments: &Self::Assignments, num_centorids: usize) -> Self{
                 if self.dim() != 2{
                     panic!("Mean: Samples dimension is not eq to 2");
                 }
@@ -37,16 +41,57 @@ macro_rules! mean_impl {
                 }
                 
                 //mean for last dimension
+                let mut assign_count_for_dim: [$t; 3] = [0.0, 0.0, 0.0];
 
-                let mut mean_tensor = vec![];
-                for i in 0..num_centroids{
-                    let bool_tensor = assignments.equals(i);
+                for i in 0..self.size[0]{
+                    assign_count_for_dim[assignments[i]] += 1.0;
+                }
 
-                    let mut slice = self.slice_at(Indexer::BoolArray(bool_tensor), 0);
-                    let mean = slice.norm(Some(1)).div(slice.size[0] as $t);
-                    mean_tensor.push(mean);
-                } 
-                mean_tensor.convert_to_tensor()
+                let mut ret_tensor = Tensor::<$t>::create_zeros(vec![num_centorids, self.size[1]]);
+                for dim in 0..self.size[1]{
+                    for sample_indx in 0..self.size[0]{
+                        ret_tensor[t![assignments[sample_indx], dim]] += self[t![sample_indx, dim]];
+                    }  
+                }
+
+                for centroid_indx in 0..num_centorids{
+                    for dim in 0..self.size[1]{
+                        ret_tensor[t![centroid_indx, dim]] /= assign_count_for_dim[centroid_indx];
+                    }
+                }
+
+                ret_tensor
+            }
+
+            fn mean_with_assignments_for_u8(&mut self, assignments: &Self::Assignmentsu8, num_centorids: usize) -> Self{
+                if self.dim() != 2{
+                    panic!("Mean: Samples dimension is not eq to 2");
+                }
+                if assignments.data.len() != self.size[0]{
+                    panic!("Mean: Assignments not equal tot samples size");
+                }
+                
+                //mean for last dimension
+                let mut assign_count_for_dim: [$t; 3] = [0.0, 0.0, 0.0];
+
+                for i in 0..self.size[0]{
+                    assign_count_for_dim[usize::from(assignments[i])] += 1.0;
+                }
+
+                let mut ret_tensor = Tensor::<$t>::create_zeros(vec![num_centorids, self.size[1]]);
+                for dim in 0..self.size[1]{
+                    for sample_indx in 0..self.size[0]{
+                        ret_tensor[t![usize::from(assignments[sample_indx]), dim]] += self[t![sample_indx, dim]];
+                    }  
+                }
+
+                for centroid_indx in 0..num_centorids{
+                    for dim in 0..self.size[1]{
+                        ret_tensor[t![centroid_indx, dim]] /= assign_count_for_dim[centroid_indx];
+                    }
+                }
+
+                ret_tensor
             }
         }
 

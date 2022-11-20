@@ -46,6 +46,13 @@ impl<'a, T> Index<Vec<Indexer<'a>>> for Tensor<'a, T> {
     }
 }
 
+impl<'a, T> IndexMut<Vec<Indexer<'a>>> for Tensor<'a, T> {
+    fn index_mut(&mut self, index: Vec<Indexer<'a>>) -> &mut T {
+        let data_index = self.size.calc_seq_index(index);
+        &mut self.data[data_index]
+    }
+}
+
 impl<'a, T> Index<usize> for Tensor<'a, T> {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output {

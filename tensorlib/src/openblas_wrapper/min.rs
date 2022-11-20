@@ -14,6 +14,8 @@ extern "C" {
 pub trait Min<'a, T>{
     fn min(self, dim: Option<usize>) -> Tensor<'a, usize>;
     fn min_blas(array: &mut [T], n: usize, incx: usize, offset: usize) -> usize;
+    fn min_for_u8(self, dim: Option<usize>) -> Tensor<'a, u8>;
+    fn min_blas_for_u8(array: &mut [T], n: usize, incx: usize, offset: usize) -> u8;
 }
 
 macro_rules! min_impl {
@@ -62,6 +64,52 @@ macro_rules! min_impl {
                         &mut incx as *mut _,
                     );
                     ret-1
+                }
+            }
+
+            fn min_for_u8(self, dim: Option<usize>) -> Tensor<'a, u8>
+            { 
+                if dim.is_some() && dim.unwrap() >= self.dim(){
+                    panic!("Min: Dimensions of tensor should be equal");
+                }
+                assert!(self.dim() <= 2);
+
+                match dim{
+                    Some(x) => match x{
+                        0 => {
+                            let mut min_values = vec![];
+                            let size_of_slice: usize = self.size.total_elements() / self.size[0];
+                            for i in 0..self.size[0]{
+                                min_values.push(Self::min_blas_for_u8(self.data, size_of_slice, 1, i*size_of_slice));
+                            }
+                            min_values.convert_to_tensor()
+                        },
+                        1 => {
+                            let mut min_values = vec![];
+                            let size_of_slice: usize = self.size.total_elements() / self.size[0];
+                            for i in 0..self.size[1]{
+                                min_values.push(Self::min_blas_for_u8(self.data, self.size[0], size_of_slice, i));
+                            }
+                            min_values.convert_to_tensor()
+                        }
+                        _ => panic!("not implemented")
+                    },
+                    None => Self::min_blas_for_u8(self.data, self.size.total_elements(), 1, 0).convert_to_tensor()
+                }
+            }
+
+            fn min_blas_for_u8(array: &mut [$t], n: usize, incx: usize, offset: usize) -> u8
+            {
+
+                unsafe {
+                    let mut n: i32 = i32::try_from(n).unwrap();
+                    let mut incx: i32 = i32::try_from(incx).unwrap();
+                    let ret = $j(
+                        &mut n as *mut _,
+                        array.as_mut_ptr().add(offset),
+                        &mut incx as *mut _,
+                    );
+                    u8::try_from(ret-1).unwrap()
                 }
             }
         }
