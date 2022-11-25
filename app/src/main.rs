@@ -13,36 +13,36 @@ macro_rules! t {
         use std::ops::{Range, RangeFull, RangeFrom, RangeTo};
 
 
-        trait IndexEnumConverter<'a> {
-            fn as_enum_variable(self)->Indexer<'a>;
+        trait IndexEnumConverter {
+            fn as_enum_variable(self)->Indexer;
         }
-        impl<'a> IndexEnumConverter<'a> for RangeFrom<usize>{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for RangeFrom<usize>{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::RangeFrom(self)
             }
         }
-        impl<'a> IndexEnumConverter<'a> for RangeTo<usize>{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for RangeTo<usize>{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::RangeTo(self)
             }
         }
-        impl<'a> IndexEnumConverter<'a> for RangeFull{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for RangeFull{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::RangeFull(self)
             }
         }
-        impl<'a> IndexEnumConverter<'a> for Range<usize>{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for Range<usize>{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::Range(self)
             }
         }
-        impl<'a> IndexEnumConverter<'a> for usize{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for usize{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::Number(self)
             }
         }
-        impl<'a> IndexEnumConverter<'a> for Tensor<'a, bool>{
-            fn as_enum_variable(self)->Indexer<'a> {
+        impl IndexEnumConverter for Tensor<bool>{
+            fn as_enum_variable(self)->Indexer {
                 Indexer::BoolArray(self)
             }
         }
@@ -84,8 +84,8 @@ fn main() {
     let y_tensor = data_tensor.slice(t![.., 1]);
 
 
-    let x_slice: &[f32] = x_tensor.data;
-    let y_slice: &[f32] = y_tensor.data;
+    let x_slice: &[f32] = x_tensor.data.as_slice();
+    let y_slice: &[f32] = y_tensor.data.as_slice();
 
 
     let mut fg = Figure::new();

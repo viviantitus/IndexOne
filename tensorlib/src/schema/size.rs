@@ -24,7 +24,7 @@ impl TensorSize{
         TensorSize { data: data, cumulative: cumulative }    
     }
 
-    pub fn create_slicevec<'a>(&self, slice: &'a Indexer, dim: usize) -> Vec<Indexer<'a>>{
+    pub fn create_slicevec<'a>(&self, slice: &'a Indexer, dim: usize) -> Vec<Indexer>{
         let mut slice_vec : Vec<Indexer> = vec![];
         for i in 0..self.data.len(){
             slice_vec.push(if dim == i {slice.clone()} else {Indexer::RangeFull(..)});

@@ -6,7 +6,7 @@ pub trait Subtract<Rhs=Self> {
     fn sub(&self, other: &Rhs) -> Self::Output;
 }
 
-impl<T: std::ops::Sub<Output=T> + Copy> Subtract for Tensor<'_, T> {
+impl<T: std::ops::Sub<Output=T> + Copy> Subtract for Tensor<T> {
     type Output = Self;
 
     fn sub(&self, other: &Tensor<T>) -> Self::Output
@@ -15,9 +15,9 @@ impl<T: std::ops::Sub<Output=T> + Copy> Subtract for Tensor<'_, T> {
             panic!("Subtract func: Size do not match")
         }
 
-        let tensor = Tensor::create_with_tensorsize(self.size().clone());
-        for i in 0..self.size().total_elements(){
-            tensor.data[i] = self.data[i] - other.data[i];
+        let mut tensor = Tensor::create_with_tensorsize(self.size().clone());
+        for i in 0..self.data.len(){
+            tensor.data.push(self.data[i] - other.data[i]);
         }
         tensor
     }

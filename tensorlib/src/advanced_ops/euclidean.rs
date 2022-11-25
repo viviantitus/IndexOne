@@ -9,10 +9,10 @@ pub trait Euclidean<T, Rhs=Self> {
 macro_rules! euclidean_impl {
     ($($t:ty)*) => ($(
 
-        impl<'a> Euclidean<$t> for Tensor<'a, $t> {
-            type Output = Tensor<'a, $t>;
+        impl<'a> Euclidean<$t> for Tensor<$t> {
+            type Output = Tensor<$t>;
 
-            fn euclidean(&self, other: &Tensor<'_, $t>) -> $t {
+            fn euclidean(&self, other: &Tensor<$t>) -> $t {
                 if self.size() != other.size() || self.dim() != 1{
                     panic!("Euclidean: Dimensions do not match");
                 }
@@ -50,7 +50,6 @@ mod tests {
     fn test_euclidean2() {
         let t1 = Tensor::<f32>::create_random(vec![20], Some(0.0..0.00001));
         let t2 = Tensor::<f32>::create_random(vec![20], Some(10.0..10.00001));
-
         let result = t2.euclidean(&t1);
         assert!(result != 0.0);
     }

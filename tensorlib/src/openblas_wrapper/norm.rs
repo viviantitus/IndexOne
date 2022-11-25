@@ -12,14 +12,14 @@ extern "C" {
 }
 
 
-pub trait Norm<'a, T>{
+pub trait Norm<T>{
     fn norm(&mut self, dim: Option<usize>) -> Self;
     fn norm_blas(array: &mut [T], n: usize, incx: usize, offset: usize) -> T;
 }
 
 macro_rules! norm_impl {
     ( $( $t:ty ),* ; $( $j:ident ),* ) => ($(
-        impl<'a> Norm<'a, $t> for Tensor<'a, $t> {
+        impl Norm<$t> for Tensor<$t> {
             fn norm(&mut self, dim: Option<usize>) -> Self
             { 
                 if dim.is_some() && dim.unwrap() >= self.dim(){
@@ -33,7 +33,7 @@ macro_rules! norm_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[0]{
-                                min_values.push(Self::norm_blas(self.data, size_of_slice, 1, i*size_of_slice));
+                                min_values.push(Self::norm_blas(self.data.as_mut_slice(), size_of_slice, 1, i*size_of_slice));
                             }
                             min_values.convert_to_tensor()
                         },
@@ -41,13 +41,13 @@ macro_rules! norm_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[1]{
-                                min_values.push(Self::norm_blas(self.data, self.size[0], size_of_slice, i));
+                                min_values.push(Self::norm_blas(self.data.as_mut_slice(), self.size[0], size_of_slice, i));
                             }
                             min_values.convert_to_tensor()
                         }
                         _ => panic!("not implemented")
                     },
-                    None => Self::norm_blas(self.data, self.size.total_elements(), 1, 0).convert_to_tensor()
+                    None => Self::norm_blas(self.data.as_mut_slice(), self.size.total_elements(), 1, 0).convert_to_tensor()
                 }
             }
 
@@ -80,9 +80,9 @@ mod blas_tests {
 
     #[test]
     fn snorm() {
-        let mut data = [10.0, 10.0, 10.0, 10.0, 10.0];
+        let data = vec![10.0, 10.0, 10.0, 10.0, 10.0];
         let data_len = data.len();
-        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
+        let mut tensor = Tensor::create_with_data_copy(data, TensorSize::new(vec![data_len]));
 
         let result = tensor.norm(None);
         assert!(result[0]==50.0)

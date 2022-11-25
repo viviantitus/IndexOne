@@ -13,7 +13,7 @@ pub trait Norm2<T>{
     fn norm2(&mut self) -> T;
 }
 
-impl Norm2<f32> for Tensor<'_, f32> {
+impl Norm2<f32> for Tensor<f32> {
     fn norm2(&mut self) -> f32
     { 
         if self.dim() != 1{
@@ -33,7 +33,7 @@ impl Norm2<f32> for Tensor<'_, f32> {
     }
 }
 
-impl Norm2<f64> for Tensor<'_, f64> {
+impl Norm2<f64> for Tensor<f64> {
     fn norm2(&mut self) -> f64
     { 
         if self.dim() != 1{
@@ -62,9 +62,9 @@ mod blas_tests {
 
     #[test]
     fn snorm2() {
-        let mut data = [10.0, 10.0, 10.0, 10.0, 10.0];
+        let data = vec![10.0, 10.0, 10.0, 10.0, 10.0];
         let data_len = data.len();
-        let mut tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
+        let mut tensor = Tensor::create_with_data_copy(data, TensorSize::new(vec![data_len]));
 
         let result: f32 = tensor.norm2();
         assert!(result==22.36068)
