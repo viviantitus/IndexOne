@@ -22,7 +22,7 @@ pub trait Random<T: PartialOrdwithSampling>{
     fn create_random_with_tensorsize(size: TensorSize, range: Option<Range<T>>) -> Self::Output where Standard: Distribution<T>;
 }
 
-impl<T: PartialOrdwithSampling> Random<T> for Tensor<'_, T> {
+impl<T: PartialOrdwithSampling> Random<T> for Tensor<T> {
     type Output = Self;
 
     fn create_random(size: Vec<usize>, range: Option<Range<T>>) -> Self::Output   where Standard: Distribution<T>
@@ -33,15 +33,16 @@ impl<T: PartialOrdwithSampling> Random<T> for Tensor<'_, T> {
 
     fn create_random_with_tensorsize(size: TensorSize, range: Option<Range<T>>) -> Self::Output  where Standard: Distribution<T>
     {
-        let tensor = Self::create_with_tensorsize(size);
+        let mut tensor = Self::create_with_tensorsize(size);
         let mut rng = thread_rng();
 
+        let total_size = tensor.data.capacity();
         match range{
-            Some(x) => for i in 0..tensor.data.len(){
-                tensor.data[i] = rng.gen_range(x.clone())
+            Some(x) => for _ in 0..total_size{
+                tensor.data.push(rng.gen_range(x.clone()))
             },
-            None => for i in 0..tensor.data.len(){
-                tensor.data[i] = rng.gen()
+            None => for _ in 0..total_size{
+                tensor.data.push(rng.gen())
             }
         }
         tensor

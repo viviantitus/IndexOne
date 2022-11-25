@@ -11,17 +11,17 @@ extern "C" {
     pub fn idamin_(x: *mut c_int, N: *mut c_double, incx: *mut c_int) -> size_t;
 }
 
-pub trait Min<'a, T>{
-    fn min(self, dim: Option<usize>) -> Tensor<'a, usize>;
+pub trait Min<T>{
+    fn min(&mut self, dim: Option<usize>) -> Tensor<usize>;
     fn min_blas(array: &mut [T], n: usize, incx: usize, offset: usize) -> usize;
-    fn min_for_u8(self, dim: Option<usize>) -> Tensor<'a, u8>;
+    fn min_for_u8(&mut self, dim: Option<usize>) -> Tensor<u8>;
     fn min_blas_for_u8(array: &mut [T], n: usize, incx: usize, offset: usize) -> u8;
 }
 
 macro_rules! min_impl {
     ( $( $t:ty ),* ; $( $j:ident ),* ) => ($(
-        impl<'a> Min<'a, $t> for Tensor<'a, $t> {
-            fn min(self, dim: Option<usize>) -> Tensor<'a, usize>
+        impl Min<$t> for Tensor<$t> {
+            fn min(&mut self, dim: Option<usize>) -> Tensor<usize>
             { 
                 if dim.is_some() && dim.unwrap() >= self.dim(){
                     panic!("Min: Dimensions of tensor should be equal");
@@ -34,7 +34,7 @@ macro_rules! min_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[0]{
-                                min_values.push(Self::min_blas(self.data, size_of_slice, 1, i*size_of_slice));
+                                min_values.push(Self::min_blas(self.data.as_mut_slice(), size_of_slice, 1, i*size_of_slice));
                             }
                             min_values.convert_to_tensor()
                         },
@@ -42,13 +42,13 @@ macro_rules! min_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[1]{
-                                min_values.push(Self::min_blas(self.data, self.size[0], size_of_slice, i));
+                                min_values.push(Self::min_blas(self.data.as_mut_slice(), self.size[0], size_of_slice, i));
                             }
                             min_values.convert_to_tensor()
                         }
                         _ => panic!("not implemented")
                     },
-                    None => Self::min_blas(self.data, self.size.total_elements(), 1, 0).convert_to_tensor()
+                    None => Self::min_blas(self.data.as_mut_slice(), self.size.total_elements(), 1, 0).convert_to_tensor()
                 }
             }
 
@@ -67,7 +67,7 @@ macro_rules! min_impl {
                 }
             }
 
-            fn min_for_u8(self, dim: Option<usize>) -> Tensor<'a, u8>
+            fn min_for_u8(&mut self, dim: Option<usize>) -> Tensor<u8>
             { 
                 if dim.is_some() && dim.unwrap() >= self.dim(){
                     panic!("Min: Dimensions of tensor should be equal");
@@ -80,7 +80,7 @@ macro_rules! min_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[0]{
-                                min_values.push(Self::min_blas_for_u8(self.data, size_of_slice, 1, i*size_of_slice));
+                                min_values.push(Self::min_blas_for_u8(self.data.as_mut_slice(), size_of_slice, 1, i*size_of_slice));
                             }
                             min_values.convert_to_tensor()
                         },
@@ -88,13 +88,13 @@ macro_rules! min_impl {
                             let mut min_values = vec![];
                             let size_of_slice: usize = self.size.total_elements() / self.size[0];
                             for i in 0..self.size[1]{
-                                min_values.push(Self::min_blas_for_u8(self.data, self.size[0], size_of_slice, i));
+                                min_values.push(Self::min_blas_for_u8(self.data.as_mut_slice(), self.size[0], size_of_slice, i));
                             }
                             min_values.convert_to_tensor()
                         }
                         _ => panic!("not implemented")
                     },
-                    None => Self::min_blas_for_u8(self.data, self.size.total_elements(), 1, 0).convert_to_tensor()
+                    None => Self::min_blas_for_u8(self.data.as_mut_slice(), self.size.total_elements(), 1, 0).convert_to_tensor()
                 }
             }
 
@@ -127,9 +127,9 @@ mod blas_tests {
 
     #[test]
     fn smin() {
-        let mut data = [8.0, 10.0, 3.0, 1.0, 10.0];
+        let data = vec![8.0, 10.0, 3.0, 1.0, 10.0];
         let data_len = data.len();
-        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![data_len]));
+        let mut tensor = Tensor::create_with_data_copy(data, TensorSize::new(vec![data_len]));
 
         let result = tensor.min(None);
         assert!(result[0]==3)
@@ -153,8 +153,8 @@ mod blas_tests {
 
     #[test]
     fn smin_dim0() {
-        let mut data = [8.0, 10.0, 3.0, 1.0, 10.0, 5.0];
-        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
+        let data = vec![8.0, 10.0, 3.0, 1.0, 10.0, 5.0];
+        let mut tensor = Tensor::create_with_data_copy(data, TensorSize::new(vec![2, 3]));
 
         let result = tensor.min(Some(0));
         assert!(result[0]==2 && result[1] == 0)
@@ -162,8 +162,8 @@ mod blas_tests {
 
     #[test]
     fn smin_dim1() {
-        let mut data = [8.0, 10.0, 3.0, 1.0, 9.0, 2.0];
-        let tensor = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![2, 3]));
+        let data = vec![8.0, 10.0, 3.0, 1.0, 9.0, 2.0];
+        let mut tensor = Tensor::create_with_data_copy(data, TensorSize::new(vec![2, 3]));
 
         let result = tensor.min(Some(1));
         assert!(result[0]==1 && result[1] == 1 && result[2] == 1)

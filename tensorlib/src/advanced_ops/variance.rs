@@ -18,13 +18,13 @@ pub trait Variance<T, Rhs=Self> {
 macro_rules! variance_impl {
     ($($t:ty)*) => ($(
 
-        impl<'a> Variance<$t> for Tensor<'a, $t> {
-            type Output = Tensor<'a, $t>;
-            type Assignments = Tensor<'a, usize>;
-            type Assignmentsu8 = Tensor<'a, u8>;
+        impl Variance<$t> for Tensor<$t> {
+            type Output = Tensor<$t>;
+            type Assignments = Tensor<usize>;
+            type Assignmentsu8 = Tensor<u8>;
 
 
-            fn variance(&self, samples: &mut Tensor<'_, $t>) -> $t {
+            fn variance(&self, samples: &mut Tensor<$t>) -> $t {
                 if self.dim() != 1{
                     panic!("Variance: Mean dimension is more than one");
                 }
@@ -41,7 +41,7 @@ macro_rules! variance_impl {
                 variance
             }
 
-            fn variance_with_assignments(&mut self, samples: &mut Tensor<'_, $t>, assignments: &Self::Assignments) -> $t {
+            fn variance_with_assignments(&mut self, samples: &mut Tensor<$t>, assignments: &Self::Assignments) -> $t {
                 if self.dim() > 2{
                     panic!("Variance: Mean dimension is more than one");
                 }
@@ -58,7 +58,7 @@ macro_rules! variance_impl {
                 variance
             }
 
-            fn variance_with_assignments_for_u8(&mut self, samples: &mut Tensor<'_, $t>, assignments: &Self::Assignmentsu8) -> $t {
+            fn variance_with_assignments_for_u8(&mut self, samples: &mut Tensor<$t>, assignments: &Self::Assignmentsu8) -> $t {
                 if self.dim() > 2{
                     panic!("Variance: Mean dimension is more than one");
                 }
@@ -94,8 +94,8 @@ mod tests {
 
     #[test]
     fn test_variance() {
-        let mut data = [10.0, 10.0, 10.0, 10.0, 10.0];
-        let mut samples = Tensor::create_with_data_copy(data.as_mut_slice(), TensorSize::new(vec![5, 1]));
+        let data = vec![10.0, 10.0, 10.0, 10.0, 10.0];
+        let mut samples = Tensor::create_with_data_copy(data, TensorSize::new(vec![5, 1]));
         let mean  = samples.slice_linear_last(2);
 
         let result: f32 = mean.variance(&mut samples);

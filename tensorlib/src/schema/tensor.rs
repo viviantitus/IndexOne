@@ -5,26 +5,21 @@ use crate::schema::index::Indexer;
 use std::fmt::Debug;
 use std::ops::{Index, IndexMut};
 
-#[derive(Debug)]
-pub struct Tensor<'a, T>{
-    pub data: &'a mut [T],
+#[derive(Debug, Clone)]
+pub struct Tensor<T>{
+    pub data: Vec<T>,
     pub size: TensorSize,
-    dim: usize
+    pub dim: usize
 }
 
-impl<'a, T> Tensor<'a, T>{
-    pub fn new(size: Vec<usize>) -> Self{
-        let tensor_size = TensorSize::new(size);
-        let tensor = Self::create_with_tensorsize(tensor_size);
-        tensor
-    }
+impl<T: Clone> Tensor<T>{
 
     pub fn create_with_tensorsize(tensor_size: TensorSize) -> Self{
         let data = tensor_size.mem_alloc();
         Self::create_with_data_copy(data, tensor_size)
     }
 
-    pub fn create_with_data_copy(data: &'a mut [T], tensor_size: TensorSize) -> Self{
+    pub fn create_with_data_copy(data: Vec<T>, tensor_size: TensorSize) -> Self{
         let dim = tensor_size.dim();        
         Tensor{ data: data, size: tensor_size, dim: dim}
     }
@@ -38,7 +33,7 @@ impl<'a, T> Tensor<'a, T>{
     }
 }
 
-impl<'a, T> Index<Vec<Indexer<'a>>> for Tensor<'a, T> {
+impl<T> Index<Vec<Indexer>> for Tensor<T> {
     type Output = T;
     fn index(&self, index: Vec<Indexer>) -> &Self::Output {
         let data_index = self.size.calc_seq_index(index);
@@ -46,30 +41,22 @@ impl<'a, T> Index<Vec<Indexer<'a>>> for Tensor<'a, T> {
     }
 }
 
-impl<'a, T> IndexMut<Vec<Indexer<'a>>> for Tensor<'a, T> {
-    fn index_mut(&mut self, index: Vec<Indexer<'a>>) -> &mut T {
+impl<T> IndexMut<Vec<Indexer>> for Tensor<T> {
+    fn index_mut(&mut self, index: Vec<Indexer>) -> &mut T {
         let data_index = self.size.calc_seq_index(index);
         &mut self.data[data_index]
     }
 }
 
-impl<'a, T> Index<usize> for Tensor<'a, T> {
+impl<T> Index<usize> for Tensor<T> {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output {
         &self.data[index]
     }
 }
 
-impl<'a, T> IndexMut<usize> for Tensor<'a, T> {
+impl<T> IndexMut<usize> for Tensor<T> {
     fn index_mut(&mut self, index: usize) -> &mut T {
         &mut self.data[index]
-    }
-}
-
-impl<'a, T: Copy> Clone for Tensor<'a, T>  {
-    fn clone(&self) -> Self {
-        let clone = Self::create_with_tensorsize(self.size.clone());
-        clone.data.copy_from_slice(self.data);
-        clone
     }
 }
